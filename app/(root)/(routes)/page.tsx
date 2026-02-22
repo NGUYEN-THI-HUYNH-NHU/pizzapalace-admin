@@ -1,7 +1,7 @@
 export default function SetupPage() {
     return (
         <div>
-            H
+            Hello Setup Page
         </div>
     );
 }

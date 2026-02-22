@@ -1,0 +1,171 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  engineType = "binary"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+  STAFF
+}
+
+model User {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  name String?
+  email String? @unique
+  phone String?
+  address String?
+  hashedPassword String?
+  role Role @default(CUSTOMER)
+  orders Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Category {
+  PIZZA
+  DRINK
+  CHICKEN
+  APPETIZER
+  COMBO
+}
+
+model Product {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  category Category
+  name String
+  slug String @unique
+  desc String
+  img String
+  price Float
+  isAvailable Boolean @default(true)
+
+  isNew Boolean @default(true)
+  isBestSeller Boolean @default(false)
+
+  pizzaDetails PizzaDetails?
+  drinkDetails DrinkDetails?
+  comboDetails ComboDetails?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// PIZZA
+type PizzaDetails {
+  sizes String[]
+  crusts String[]
+  variants PizzaVariant[] 
+}
+
+model PizzaSize {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  name String
+  code String @unique
+}
+
+model PizzaCrust {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  name String
+  code String @unique
+  availableSizes String[]
+  isAvailable Boolean @default(true)
+}
+
+type PizzaVariant {
+  size String
+  crust String
+  price Float
+  sku String
+  isAvailable Boolean @default(true)
+}
+
+// DRINK
+type DrinkDetails {
+  volume String
+  brand String?
+}
+
+// COMBO
+type ComboDetails {
+  slots ComboSlot[]
+}
+
+type ComboSlot {
+  name String
+  quantity Int
+  options ComboOption[]
+}
+
+type ComboOption {
+  productId String @db.ObjectId
+  productName String
+}
+
+enum OrderStatus {
+  PENDING     // Vừa đặt, chờ xác nhận
+  PREPARING   // Đang làm bánh
+  DELIVERING  // Đang giao
+  COMPLETED   // Đã hoàn thành
+  CANCELLED   // Đã hủy
+}
+
+enum PaymentMethod {
+  CASH 
+  ONLINE
+}
+
+model Order {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  
+  customerName String
+  customerPhone String
+  customerAddress String
+  
+  userId String? @db.ObjectId
+  user User? @relation(fields: [userId], references: [id])
+
+  totalAmount Float
+  status OrderStatus @default(PENDING)
+  paymentMethod PaymentMethod @default(CASH)
+  isPaid Boolean @default(false)
+  
+  orderItems OrderItem[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+type OrderItem {
+  productId String @db.ObjectId
+  productName String
+  sku String
+  price Float
+  quantity Int
+  selectedOptions SelectedOption[]
+}
+
+type SelectedOption {
+  k String
+  v String
+  productId String? @db.ObjectId
+  sku String
+  subOptions SubOption[]
+}
+
+type SubOption {
+  name String
+  value String
+  price Float
+}
