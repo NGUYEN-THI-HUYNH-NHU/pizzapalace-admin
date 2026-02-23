@@ -27,7 +27,7 @@ export const columns: ColumnDef<Column>[] = [
         accessorKey: "img",
         header: "Img",
         cell: ({ row }) => (
-            <div className="relative h-10 w-10 overflow-hidden rounded-full border">
+            <div className="relative h-11 w-11 overflow-hidden rounded-full border">
                 <Image
                     src={row.original.img}
                     alt={row.original.name}

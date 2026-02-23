@@ -12,6 +12,11 @@ export type Column = {
     name: string
     slug: string
     basePrice: number
+    tags: {
+        code: string
+        name: string
+        color: string
+    }[]
     sizesCount: number
     crustsCount: number
     variantsCount: number
@@ -25,12 +30,30 @@ const currencyFormatter = new Intl.NumberFormat("vi-VN", {
     currency: "VND"
 });
 
+const getReadableTextColor = (hexColor: string) => {
+    const sanitized = hexColor.replace("#", "");
+    const normalized = sanitized.length === 3
+        ? sanitized.split("").map((char) => `${char}${char}`).join("")
+        : sanitized;
+
+    if (!/^[0-9a-fA-F]{6}$/.test(normalized)) {
+        return "#ffffff";
+    }
+
+    const red = Number.parseInt(normalized.slice(0, 2), 16);
+    const green = Number.parseInt(normalized.slice(2, 4), 16);
+    const blue = Number.parseInt(normalized.slice(4, 6), 16);
+    const brightness = (red * 299 + green * 587 + blue * 114) / 1000;
+
+    return brightness > 160 ? "#111111" : "#ffffff";
+};
+
 export const columns: ColumnDef<Column>[] = [
     {
         accessorKey: "img",
-        header: "Img",
+        header: "Image",
         cell: ({ row }) => (
-            <div className="relative h-10 w-10 overflow-hidden rounded-full border">
+            <div className="relative h-11 w-11 overflow-hidden rounded-full border">
                 <Image
                     src={row.original.img}
                     alt={row.original.name}
@@ -62,6 +85,31 @@ export const columns: ColumnDef<Column>[] = [
             <span>
                 {row.original.sizesCount} Cỡ, {row.original.crustsCount} Đế ({row.original.variantsCount} Biến thể)
             </span>
+        )
+    },
+    {
+        accessorKey: "tags",
+        header: "Tags",
+        cell: ({ row }) => (
+            <div className="flex flex-wrap gap-1">
+                {row.original.tags.length > 0 ? (
+                    row.original.tags.map((tag) => (
+                        <Badge
+                            key={tag.code}
+                            variant="outline"
+                            style={{
+                                backgroundColor: tag.color,
+                                borderColor: tag.color,
+                                color: getReadableTextColor(tag.color)
+                            }}
+                        >
+                            {tag.name}
+                        </Badge>
+                    ))
+                ) : (
+                    <span className="text-xs text-muted-foreground">No tags</span>
+                )}
+            </div>
         )
     },
     {

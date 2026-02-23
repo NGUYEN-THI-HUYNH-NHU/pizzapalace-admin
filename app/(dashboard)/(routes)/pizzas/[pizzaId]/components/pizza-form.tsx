@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import { useParams, useRouter } from "next/navigation";
 
-import { PizzaCrust, PizzaSize, Product } from "@prisma/client";
+import { PizzaCrust, PizzaSize, PizzaTag, Product } from "@prisma/client";
 
 import { Heading } from "@/components/ui/heading";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,12 @@ import { AlertModal } from "@/components/modals/alert-modal";
 import ImageUpload from "@/components/ui/image-upload";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import {
+    DropdownMenu,
+    DropdownMenuCheckboxItem,
+    DropdownMenuContent,
+    DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 
 interface VariantRow {
     sizeCode: string;
@@ -56,7 +62,8 @@ const formSchema = z.object({
     slug: z.string().min(1),
     desc: z.string().min(1),
     img: z.string().min(1),
-    price: z.number().min(0.1),
+    price: z.number().min(1),
+    tags: z.array(z.string()),
     sizes: z.array(z.string()),
     crusts: z.array(z.string()),
     isAvailable: z.boolean(),
@@ -70,6 +77,7 @@ interface PizzaFormProps {
     initialData: PizzaInitialData | null;
     sizes: PizzaSize[];
     crusts: PizzaCrust[];
+    tags: PizzaTag[];
 }
 
 const normalizeSlug = (value: string) =>
@@ -84,10 +92,29 @@ const normalizeSlug = (value: string) =>
         .replace(/-+/g, "-")
         .replace(/^-|-$/g, "");
 
+const getReadableTextColor = (hexColor: string) => {
+    const sanitized = hexColor.replace("#", "");
+    const normalized = sanitized.length === 3
+        ? sanitized.split("").map((char) => `${char}${char}`).join("")
+        : sanitized;
+
+    if (!/^[0-9a-fA-F]{6}$/.test(normalized)) {
+        return "#ffffff";
+    }
+
+    const red = Number.parseInt(normalized.slice(0, 2), 16);
+    const green = Number.parseInt(normalized.slice(2, 4), 16);
+    const blue = Number.parseInt(normalized.slice(4, 6), 16);
+    const brightness = (red * 299 + green * 587 + blue * 114) / 1000;
+
+    return brightness > 160 ? "#111111" : "#ffffff";
+};
+
 export const PizzaForm: React.FC<PizzaFormProps> = ({
     initialData,
     sizes,
-    crusts
+    crusts,
+    tags
 }) => {
     const params = useParams();
     const router = useRouter();
@@ -119,6 +146,7 @@ export const PizzaForm: React.FC<PizzaFormProps> = ({
             desc: initialData?.desc ?? "",
             img: initialData?.img ?? "",
             price: initialData?.price ?? 0,
+            tags: initialData?.tags ?? [],
             sizes: initialData?.pizzaDetails?.sizes ?? [],
             crusts: initialData?.pizzaDetails?.crusts ?? [],
             isAvailable: initialData?.isAvailable ?? true,
@@ -194,6 +222,7 @@ export const PizzaForm: React.FC<PizzaFormProps> = ({
                 desc: data.desc,
                 img: data.img,
                 price: data.price,
+                tags: data.tags,
                 isAvailable: data.isAvailable,
                 isNew: data.isNew,
                 isBestSeller: data.isBestSeller,
@@ -268,7 +297,7 @@ export const PizzaForm: React.FC<PizzaFormProps> = ({
                     className="space-y-8 w-full"
                 >
                     <div className="space-y-3">
-                        <h3 className="font-semibold">Section 1: Pizza Image</h3>
+                        <h3 className="font-semibold">Pizza Image</h3>
                         <FormField
                             control={form.control}
                             name="img"
@@ -291,7 +320,7 @@ export const PizzaForm: React.FC<PizzaFormProps> = ({
                     <Separator />
 
                     <div className="space-y-4">
-                        <h3 className="font-semibold">Section 2: Name, Slug, Description</h3>
+                        <h3 className="font-semibold">Name, Slug, Description</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <FormField
                                 control={form.control}
@@ -302,7 +331,7 @@ export const PizzaForm: React.FC<PizzaFormProps> = ({
                                         <FormControl>
                                             <Input
                                                 disabled={loading}
-                                                placeholder="Pizza phô mai cao cấp"
+                                                placeholder="pizza-pho-mai-cao-cap"
                                                 value={field.value}
                                                 onChange={(event) => {
                                                     const value = event.target.value;
@@ -338,7 +367,7 @@ export const PizzaForm: React.FC<PizzaFormProps> = ({
                                     <FormControl>
                                         <textarea
                                             disabled={loading}
-                                            placeholder="Description ..."
+                                            placeholder="Phô mai Mozzarella, mật ong, xốt cà chua. Ngon hơn với mật ong ..."
                                             className="min-h-24 w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none"
                                             {...field}
                                         />
@@ -352,7 +381,7 @@ export const PizzaForm: React.FC<PizzaFormProps> = ({
                     <Separator />
 
                     <div className="space-y-3">
-                        <h3 className="font-semibold">Section 3: Flags</h3>
+                        <h3 className="font-semibold">Flags</h3>
                         <div className="flex items-center gap-2">
                             <Checkbox
                                 checked={areAllFlagsSelected ? true : (areSomeFlagsSelected ? "indeterminate" : false)}
@@ -414,7 +443,7 @@ export const PizzaForm: React.FC<PizzaFormProps> = ({
                     <Separator />
 
                     <div className="space-y-3">
-                        <h3 className="font-semibold">Section 4: Base Price</h3>
+                        <h3 className="font-semibold">Base Price</h3>
                         <FormField
                             control={form.control}
                             name="price"
@@ -424,7 +453,7 @@ export const PizzaForm: React.FC<PizzaFormProps> = ({
                                     <FormControl>
                                         <Input
                                             type="number"
-                                            step="0.1"
+                                            step="1"
                                             disabled={loading}
                                             value={field.value}
                                             onChange={(event) => {
@@ -441,13 +470,87 @@ export const PizzaForm: React.FC<PizzaFormProps> = ({
 
                     <Separator />
 
+                    <div className="space-y-3">
+                        <h3 className="font-semibold">Tags</h3>
+                        <FormField
+                            control={form.control}
+                            name="tags"
+                            render={({ field }) => {
+                                const selectedTags = tags.filter((tag) => field.value.includes(tag.code));
+
+                                return (
+                                    <FormItem>
+                                        <FormLabel>Select tags</FormLabel>
+                                        <FormControl>
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button type="button" variant="outline" className="w-full justify-between">
+                                                            {field.value.length > 0
+                                                                ? `Selected ${field.value.length} tag(s)`
+                                                                : "Choose tags"}
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent className="w-70">
+                                                        {tags.map((tag) => {
+                                                            const isSelected = field.value.includes(tag.code);
+
+                                                            return (
+                                                                <DropdownMenuCheckboxItem
+                                                                    key={tag.id}
+                                                                    checked={isSelected}
+                                                                    onSelect={(event) => event.preventDefault()}
+                                                                    onCheckedChange={(checked) => {
+                                                                        if (checked === true) {
+                                                                            field.onChange([...field.value, tag.code]);
+                                                                            return;
+                                                                        }
+
+                                                                        field.onChange(field.value.filter((code) => code !== tag.code));
+                                                                    }}
+                                                                >
+                                                                    {tag.name}
+                                                                </DropdownMenuCheckboxItem>
+                                                            );
+                                                        })}
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+
+                                                {selectedTags.length > 0 && (
+                                                    <div className="flex flex-wrap items-center gap-2 col-span-2">
+                                                        {selectedTags.map((tag) => (
+                                                            <Badge
+                                                                key={tag.id}
+                                                                variant="outline"
+                                                                style={{
+                                                                    backgroundColor: tag.color,
+                                                                    borderColor: tag.color,
+                                                                    color: getReadableTextColor(tag.color)
+                                                                }}
+                                                            >
+                                                                {tag.name}
+                                                            </Badge>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                );
+                            }}
+                        />
+                    </div>
+
+                    <Separator />
+
                     <div className="space-y-4">
-                        <h3 className="font-semibold">Section 5: Sizes & Crusts</h3>
+                        <h3 className="font-semibold">Sizes & Crusts</h3>
                         <FormField
                             control={form.control}
                             name="sizes"
                             render={({ field }) => (
-                                <FormItem className="space-y-3 md:col-span-1">
+                                <FormItem className="space-y-3 col-span-1">
                                     <FormLabel>Sizes</FormLabel>
                                     <div className="flex flex-wrap gap-3">
                                         {sizes.map((size) => {
@@ -481,7 +584,7 @@ export const PizzaForm: React.FC<PizzaFormProps> = ({
                             control={form.control}
                             name="crusts"
                             render={({ field }) => (
-                                <FormItem className="space-y-3 md:col-span-2">
+                                <FormItem className="space-y-3">
                                     <FormLabel>Crusts</FormLabel>
                                     <div className="flex items-center gap-2">
                                         <Checkbox
@@ -559,7 +662,7 @@ export const PizzaForm: React.FC<PizzaFormProps> = ({
                                             </div>
                                             <Input
                                                 type="number"
-                                                step="0.1"
+                                                step="1"
                                                 disabled={loading}
                                                 value={variantPrices[key] ?? basePrice ?? 0}
                                                 onChange={(event) => {

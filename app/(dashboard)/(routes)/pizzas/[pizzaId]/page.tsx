@@ -23,6 +23,8 @@ const PizzaPage = async ({
 
     const crusts = await prismadb.pizzaCrust.findMany({});
 
+    const tags = await prismadb.pizzaTag.findMany({});
+
     if (pizzaId !== "new" && !pizza) {
         notFound();
     }
@@ -34,6 +36,7 @@ const PizzaPage = async ({
                     initialData={pizza}
                     sizes={sizes}
                     crusts={crusts}
+                    tags={tags}
                 />
             </div>
         </div>

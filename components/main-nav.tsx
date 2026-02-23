@@ -22,6 +22,11 @@ export function MainNav({
             active: pathname === `/crusts`,
         },
         {
+            href: `/tags`,
+            label: 'Tags',
+            active: pathname === `/tags`,
+        },
+        {
             href: `/pizzas`,
             label: 'Pizzas',
             active: pathname === `/pizzas`,
