@@ -41,7 +41,7 @@ const AvailabilityToggle: React.FC<AvailabilityToggleProps> = ({
             size="sm"
             disabled={loading}
             onClick={onToggle}
-            className="w-12 justify-start px-1"
+            className="w-12 h-6 justify-start px-1"
         >
             <span
                 className={`h-4 w-4 rounded-full transition-transform ${isAvailable

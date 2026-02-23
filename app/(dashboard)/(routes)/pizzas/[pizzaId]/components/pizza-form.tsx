@@ -2,7 +2,7 @@
 
 import * as z from "zod";
 import { useMemo, useState } from "react";
-import { Trash } from "lucide-react";
+import { Trash, X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
@@ -331,7 +331,7 @@ export const PizzaForm: React.FC<PizzaFormProps> = ({
                                         <FormControl>
                                             <Input
                                                 disabled={loading}
-                                                placeholder="pizza-pho-mai-cao-cap"
+                                                placeholder="Pizza Phô Mai Cao Cấp"
                                                 value={field.value}
                                                 onChange={(event) => {
                                                     const value = event.target.value;
@@ -529,6 +529,13 @@ export const PizzaForm: React.FC<PizzaFormProps> = ({
                                                                 }}
                                                             >
                                                                 {tag.name}
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => field.onChange(field.value.filter((code) => code !== tag.code))}
+                                                                    className="inline-flex"
+                                                                >
+                                                                    <X className="h-3 w-3" />
+                                                                </button>
                                                             </Badge>
                                                         ))}
                                                     </div>

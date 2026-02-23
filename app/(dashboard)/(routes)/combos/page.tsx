@@ -1,7 +1,47 @@
-export default function DashboardPage() {
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+
+import prismadb from "@/lib/prismadb";
+import { Category } from "@prisma/client";
+
+import { Column } from "./components/columns";
+import CombosClient from "./components/client";
+
+const CombosPage = async () => {
+    const { userId } = await auth();
+
+    if (!userId) {
+        redirect('/');
+    }
+
+    const combos = await prismadb.product.findMany({
+        where: {
+            category: Category.COMBO
+        },
+        orderBy: {
+            createdAt: 'desc'
+        }
+    });
+
+    const formattedCombos: Column[] = combos.map((item) => ({
+        id: item.id,
+        img: item.img,
+        name: item.name,
+        slug: item.slug,
+        basePrice: item.price,
+        variantsCount: item.pizzaDetails?.variants?.length ?? 0,
+        isNew: item.isNew,
+        isBestSeller: item.isBestSeller,
+        isAvailable: item.isAvailable,
+    }));
+
     return (
-        <div>
-            Combos Page
+        <div className="flex-col ">
+            <div className="flex-1 space-y-4 p-8 pt-6">
+                <CombosClient data={formattedCombos} />
+            </div>
         </div>
     );
-}
+};
+
+export default CombosPage;
