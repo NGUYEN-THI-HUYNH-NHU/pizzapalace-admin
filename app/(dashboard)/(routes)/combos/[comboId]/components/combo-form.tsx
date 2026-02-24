@@ -3,14 +3,14 @@
 import * as z from "zod";
 import Image from "next/image";
 import { useMemo, useState } from "react";
-import { Plus, Trash, X } from "lucide-react";
+import { Trash } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { useParams, useRouter } from "next/navigation";
 
-import { Category, PizzaTag, Product } from "@prisma/client";
+import { Category, PizzaSize, PizzaTag, Product } from "@prisma/client";
 
 import { Heading } from "@/components/ui/heading";
 import { Button } from "@/components/ui/button";
@@ -27,13 +27,6 @@ import { Input } from "@/components/ui/input";
 import { AlertModal } from "@/components/modals/alert-modal";
 import ImageUpload from "@/components/ui/image-upload";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import {
-    DropdownMenu,
-    DropdownMenuCheckboxItem,
-    DropdownMenuContent,
-    DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
 import {
     Dialog,
     DialogContent,
@@ -42,18 +35,14 @@ import {
     DialogHeader,
     DialogTitle
 } from "@/components/ui/dialog";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow
-} from "@/components/ui/table";
+
+import { ComboSlots, ProductForSlot, SlotState, SlotType } from "./combo-slots";
+import { currencyFormatter } from "@/lib/utils";
 
 interface ComboOptionInput {
     productId: string;
     productName: string;
+    sizeRequirement?: string;
 }
 
 interface ComboSlotInput {
@@ -66,32 +55,8 @@ interface ComboDetailsInput {
     slots: ComboSlotInput[];
 }
 
-interface ProductForSlot extends Omit<Product, "pizzaDetails" | "comboDetails" | "drinkDetails"> {
-    pizzaDetails?: {
-        variants?: {
-            size: string;
-            crust: string;
-            price: number;
-        }[];
-    } | null;
-    drinkDetails?: {
-        volume?: string;
-        brand?: string | null;
-    } | null;
-}
-
 interface ComboInitialData extends Omit<Product, "comboDetails"> {
     comboDetails?: ComboDetailsInput | null;
-}
-
-type SlotType = "PIZZA" | "DRINK";
-
-interface SlotState {
-    id: string;
-    name: string;
-    type: SlotType;
-    productIds: string[];
-    tagCodes: string[];
 }
 
 const formSchema = z.object({
@@ -111,6 +76,7 @@ interface ComboFormProps {
     initialData: ComboInitialData | null;
     products: ProductForSlot[];
     tags: PizzaTag[];
+    pizzaSizes: PizzaSize[];
 }
 
 const normalizeSlug = (value: string) =>
@@ -127,26 +93,12 @@ const normalizeSlug = (value: string) =>
 
 const createSlotId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
-const getReadableTextColor = (hexColor: string) => {
-    const sanitized = hexColor.replace("#", "");
-    const normalized = sanitized.length === 3
-        ? sanitized.split("").map((char) => `${char}${char}`).join("")
-        : sanitized;
-
-    if (!/^[0-9a-fA-F]{6}$/.test(normalized)) {
-        return "#ffffff";
-    }
-
-    const red = Number.parseInt(normalized.slice(0, 2), 16);
-    const green = Number.parseInt(normalized.slice(2, 4), 16);
-    const blue = Number.parseInt(normalized.slice(4, 6), 16);
-    const brightness = (red * 299 + green * 587 + blue * 114) / 1000;
-
-    return brightness > 160 ? "#111111" : "#ffffff";
-};
-
-const getProductPriceRange = (product: ProductForSlot) => {
-    const variantPrices = product.pizzaDetails?.variants?.map((variant) => Number(variant.price)) ?? [];
+const getProductPriceRange = (product: ProductForSlot, sizeCode?: string) => {
+    const rawVariants = product.pizzaDetails?.variants ?? [];
+    const variants = sizeCode
+        ? rawVariants.filter((variant) => variant.size === sizeCode)
+        : rawVariants;
+    const variantPrices = variants.map((variant) => Number(variant.price));
 
     if (!variantPrices.length) {
         const basePrice = Number(product.price);
@@ -163,12 +115,11 @@ const getProductPriceRange = (product: ProductForSlot) => {
     };
 };
 
-const formatPrice = (price: number) => `${Number(price).toLocaleString("vi-VN")}đ`;
-
 export const ComboForm: React.FC<ComboFormProps> = ({
     initialData,
     products,
-    tags
+    tags,
+    pizzaSizes
 }) => {
     const params = useParams();
     const router = useRouter();
@@ -197,6 +148,31 @@ export const ComboForm: React.FC<ComboFormProps> = ({
         }, {});
     }, [tags]);
 
+    const pizzaSizesByCode = useMemo(() => {
+        return pizzaSizes.reduce<Record<string, PizzaSize>>((acc, size) => {
+            acc[size.code] = size;
+            return acc;
+        }, {});
+    }, [pizzaSizes]);
+
+    const defaultPizzaSizeCode = pizzaSizes[0]?.code ?? "";
+
+    const isProductCompatibleWithSlot = (product: ProductForSlot, slot: SlotState) => {
+        const sameType = slot.type === "PIZZA"
+            ? product.category === Category.PIZZA
+            : product.category === Category.DRINK;
+
+        if (!sameType) {
+            return false;
+        }
+
+        if (slot.type === "PIZZA" && slot.pizzaSizeCode) {
+            return (product.pizzaDetails?.variants ?? []).some((variant) => variant.size === slot.pizzaSizeCode);
+        }
+
+        return true;
+    };
+
     const initialSlots = useMemo<SlotState[]>(() => {
         const slots = initialData?.comboDetails?.slots ?? [];
 
@@ -208,15 +184,19 @@ export const ComboForm: React.FC<ComboFormProps> = ({
                 id: `${index}-${createSlotId()}`,
                 name: slot.name,
                 type: inferredType,
+                pizzaSizeCode: inferredType === "PIZZA"
+                    ? (slot.options[0]?.sizeRequirement ?? firstOptionProduct?.pizzaDetails?.variants?.[0]?.size ?? (pizzaSizes[0]?.code ?? ""))
+                    : "",
                 productIds: slot.options
                     .map((option) => option.productId)
                     .filter((productId) => Boolean(productsById[productId])),
                 tagCodes: []
             };
         });
-    }, [initialData, productsById]);
+    }, [initialData, productsById, pizzaSizes]);
 
     const [slots, setSlots] = useState<SlotState[]>(initialSlots);
+    const [activeSlotId, setActiveSlotId] = useState<string>(initialSlots[0]?.id ?? "");
 
     const form = useForm<ComboFormValues>({
         resolver: zodResolver(formSchema),
@@ -251,11 +231,7 @@ export const ComboForm: React.FC<ComboFormProps> = ({
         }
 
         return products.filter((product) => {
-            const sameType = slotForProductModal.type === "PIZZA"
-                ? product.category === Category.PIZZA
-                : product.category === Category.DRINK;
-
-            if (!sameType || !product.isAvailable) {
+            if (!product.isAvailable || !isProductCompatibleWithSlot(product, slotForProductModal)) {
                 return false;
             }
 
@@ -268,20 +244,48 @@ export const ComboForm: React.FC<ComboFormProps> = ({
     }, [slotForProductModal, productSearch, products]);
 
     const addSlot = () => {
+        const newSlotId = createSlotId();
+
         setSlots((prev) => [
             ...prev,
             {
-                id: createSlotId(),
+                id: newSlotId,
                 name: `Slot ${prev.length + 1}`,
                 type: "PIZZA",
+                pizzaSizeCode: defaultPizzaSizeCode,
                 productIds: [],
                 tagCodes: []
             }
         ]);
+
+        setActiveSlotId(newSlotId);
     };
 
     const updateSlot = (slotId: string, updater: (slot: SlotState) => SlotState) => {
         setSlots((prev) => prev.map((slot) => slot.id === slotId ? updater(slot) : slot));
+    };
+
+    const removeSlot = (slotId: string) => {
+        setSlots((prev) => {
+            const nextSlots = prev.filter((slot) => slot.id !== slotId);
+
+            if (!nextSlots.length) {
+                setActiveSlotId("");
+                return nextSlots;
+            }
+
+            if (activeSlotId === slotId) {
+                setActiveSlotId(nextSlots[0].id);
+            }
+
+            return nextSlots;
+        });
+    };
+
+    const pruneTagCodesByProducts = (productIds: string[], tagCodes: string[]) => {
+        return tagCodes.filter((tagCode) => {
+            return productIds.some((productId) => productsById[productId]?.tags.includes(tagCode));
+        });
     };
 
     const addProductsByTag = (slotId: string, tagCode: string) => {
@@ -291,11 +295,9 @@ export const ComboForm: React.FC<ComboFormProps> = ({
                 : [...slot.tagCodes, tagCode];
 
             const matchedProducts = products.filter((product) => {
-                const sameType = slot.type === "PIZZA"
-                    ? product.category === Category.PIZZA
-                    : product.category === Category.DRINK;
-
-                return sameType && product.isAvailable && product.tags.includes(tagCode);
+                return isProductCompatibleWithSlot(product, slot)
+                    && product.isAvailable
+                    && product.tags.includes(tagCode);
             });
 
             const mergedProductIds = Array.from(new Set([
@@ -312,33 +314,57 @@ export const ComboForm: React.FC<ComboFormProps> = ({
     };
 
     const removeTagFromSlot = (slotId: string, tagCode: string) => {
-        updateSlot(slotId, (slot) => ({
-            ...slot,
-            tagCodes: slot.tagCodes.filter((code) => code !== tagCode)
-        }));
+        updateSlot(slotId, (slot) => {
+            const nextProductIds = slot.productIds.filter((productId) => {
+                const product = productsById[productId];
+                return !product?.tags.includes(tagCode);
+            });
+
+            const nextTagCodes = slot.tagCodes.filter((code) => code !== tagCode);
+
+            return {
+                ...slot,
+                productIds: nextProductIds,
+                tagCodes: pruneTagCodesByProducts(nextProductIds, nextTagCodes)
+            };
+        });
     };
 
     const toggleProductInSlot = (slotId: string, productId: string, checked: boolean) => {
         updateSlot(slotId, (slot) => {
             if (checked) {
+                const product = productsById[productId];
+
+                if (!product || !isProductCompatibleWithSlot(product, slot)) {
+                    return slot;
+                }
+
                 return {
                     ...slot,
                     productIds: Array.from(new Set([...slot.productIds, productId]))
                 };
             }
 
+            const nextProductIds = slot.productIds.filter((id) => id !== productId);
+
             return {
                 ...slot,
-                productIds: slot.productIds.filter((id) => id !== productId)
+                productIds: nextProductIds,
+                tagCodes: pruneTagCodesByProducts(nextProductIds, slot.tagCodes)
             };
         });
     };
 
     const removeProductFromSlot = (slotId: string, productId: string) => {
-        updateSlot(slotId, (slot) => ({
-            ...slot,
-            productIds: slot.productIds.filter((id) => id !== productId)
-        }));
+        updateSlot(slotId, (slot) => {
+            const nextProductIds = slot.productIds.filter((id) => id !== productId);
+
+            return {
+                ...slot,
+                productIds: nextProductIds,
+                tagCodes: pruneTagCodesByProducts(nextProductIds, slot.tagCodes)
+            };
+        });
     };
 
     const onSubmit = async (data: ComboFormValues) => {
@@ -355,7 +381,8 @@ export const ComboForm: React.FC<ComboFormProps> = ({
                         .filter((product): product is ProductForSlot => Boolean(product))
                         .map((product) => ({
                             productId: product.id,
-                            productName: product.name
+                            productName: product.name,
+                            sizeRequirement: slot.type === "PIZZA" ? (slot.pizzaSizeCode || undefined) : undefined
                         }))
                 }));
 
@@ -461,7 +488,7 @@ export const ComboForm: React.FC<ComboFormProps> = ({
                                             />
                                             <div>
                                                 <p className="font-medium text-sm">{product.name}</p>
-                                                <p className="text-xs text-muted-foreground">{formatPrice(product.price)}</p>
+                                                <p className="text-xs text-muted-foreground">{currencyFormatter.format(product.price)}</p>
                                             </div>
                                         </div>
                                         <Checkbox
@@ -563,7 +590,7 @@ export const ComboForm: React.FC<ComboFormProps> = ({
                                     <FormItem>
                                         <FormLabel>Slug (auto)</FormLabel>
                                         <FormControl>
-                                            <Input disabled value={field.value} />
+                                            <Input placeholder="combo-dai-su-an-ngon" disabled value={field.value} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -656,321 +683,59 @@ export const ComboForm: React.FC<ComboFormProps> = ({
 
                     <div className="space-y-3">
                         <h3 className="font-semibold">Base Price</h3>
-                        <FormField
-                            control={form.control}
-                            name="price"
-                            render={({ field }) => (
-                                <FormItem className="max-w-xs">
-                                    <FormLabel>Price</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            type="number"
-                                            step="1"
-                                            disabled={loading}
-                                            value={field.value}
-                                            onChange={(event) => {
-                                                const raw = event.target.value;
-                                                field.onChange(raw === "" ? 0 : Number(raw));
-                                            }}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="price"
+                                render={({ field }) => (
+                                    <FormItem className="max-w-xs">
+                                        <FormLabel>Price</FormLabel>
+                                        <FormControl>
+                                            <div className="space-y-2 md:col-span-2">
+                                                <Input
+                                                    type="number"
+                                                    step="1"
+                                                    disabled={loading}
+                                                    value={field.value}
+                                                    onChange={(event) => {
+                                                        const raw = event.target.value;
+                                                        field.onChange(raw === "" ? 0 : Number(raw));
+                                                    }}
+                                                />
+                                            </div>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
                     </div>
 
                     <Separator />
 
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h3 className="font-semibold">Combo slots</h3>
-                                <p className="text-sm text-muted-foreground">Current slots: {slots.length}</p>
-                            </div>
-                            <Button type="button" variant="outline" onClick={addSlot}>
-                                <Plus className="h-4 w-4 mr-2" />
-                                Add combo slot
-                            </Button>
-                        </div>
-
-                        {!slots.length && (
-                            <p className="text-sm text-muted-foreground">No slot yet. Click Add combo slot to create one.</p>
-                        )}
-
-                        <div className="space-y-6">
-                            {slots.map((slot, slotIndex) => {
-                                const selectedProducts = slot.productIds
-                                    .map((productId) => productsById[productId])
-                                    .filter((product): product is ProductForSlot => Boolean(product));
-
-                                const slotMinPrice = selectedProducts.length
-                                    ? Math.min(...selectedProducts.map((product) => getProductPriceRange(product).min))
-                                    : 0;
-                                const slotMaxPrice = selectedProducts.length
-                                    ? Math.max(...selectedProducts.map((product) => getProductPriceRange(product).max))
-                                    : 0;
-
-                                return (
-                                    <div key={slot.id} className="rounded-md border p-4 space-y-4">
-                                        <div className="flex items-center justify-between">
-                                            <h4 className="font-semibold">Slot {slotIndex + 1}</h4>
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => setSlots((prev) => prev.filter((item) => item.id !== slot.id))}
-                                            >
-                                                <Trash className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-
-                                        <div className="space-y-3">
-                                            <h5 className="font-medium">Slot info</h5>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div className="space-y-2">
-                                                    <FormLabel>Slot name</FormLabel>
-                                                    <Input
-                                                        value={slot.name}
-                                                        onChange={(event) => {
-                                                            const nextName = event.target.value;
-                                                            updateSlot(slot.id, (current) => ({ ...current, name: nextName }));
-                                                        }}
-                                                        placeholder="Ví dụ: Chọn pizza"
-                                                    />
-                                                </div>
-
-                                                <div className="space-y-2">
-                                                    <FormLabel>Item type</FormLabel>
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button type="button" variant="outline" className="w-full justify-between">
-                                                                {slot.type}
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent className="w-52">
-                                                            {["PIZZA", "DRINK"].map((typeOption) => (
-                                                                <DropdownMenuCheckboxItem
-                                                                    key={typeOption}
-                                                                    checked={slot.type === typeOption}
-                                                                    onSelect={(event) => event.preventDefault()}
-                                                                    onCheckedChange={() => {
-                                                                        updateSlot(slot.id, (current) => ({
-                                                                            ...current,
-                                                                            type: typeOption as SlotType,
-                                                                            productIds: [],
-                                                                            tagCodes: []
-                                                                        }));
-                                                                    }}
-                                                                >
-                                                                    {typeOption}
-                                                                </DropdownMenuCheckboxItem>
-                                                            ))}
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-3">
-                                            <h5 className="font-medium">Slot toolbar</h5>
-                                            <div className="flex flex-wrap items-center gap-2">
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    onClick={() => {
-                                                        setProductSearch("");
-                                                        setProductModalSlotId(slot.id);
-                                                    }}
-                                                >
-                                                    Add product
-                                                </Button>
-
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button type="button" variant="outline">
-                                                            Add by tags
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent className="w-64">
-                                                        {tags.map((tag) => (
-                                                            <DropdownMenuCheckboxItem
-                                                                key={tag.id}
-                                                                checked={slot.tagCodes.includes(tag.code)}
-                                                                onSelect={(event) => event.preventDefault()}
-                                                                onCheckedChange={(checked) => {
-                                                                    if (checked === true) {
-                                                                        addProductsByTag(slot.id, tag.code);
-                                                                        return;
-                                                                    }
-
-                                                                    removeTagFromSlot(slot.id, tag.code);
-                                                                }}
-                                                            >
-                                                                {tag.name}
-                                                            </DropdownMenuCheckboxItem>
-                                                        ))}
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </div>
-
-                                            {!!slot.tagCodes.length && (
-                                                <div className="flex flex-wrap items-center gap-2">
-                                                    {slot.tagCodes.map((code) => {
-                                                        const tag = tagsByCode[code];
-
-                                                        if (!tag) {
-                                                            return null;
-                                                        }
-
-                                                        return (
-                                                            <Badge
-                                                                key={tag.code}
-                                                                variant="outline"
-                                                                style={{
-                                                                    backgroundColor: tag.color,
-                                                                    borderColor: tag.color,
-                                                                    color: getReadableTextColor(tag.color)
-                                                                }}
-                                                            >
-                                                                {tag.name}
-                                                                <button
-                                                                    type="button"
-                                                                    className="inline-flex"
-                                                                    onClick={() => removeTagFromSlot(slot.id, tag.code)}
-                                                                >
-                                                                    <X className="h-3 w-3" />
-                                                                </button>
-                                                            </Badge>
-                                                        );
-                                                    })}
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <div className="space-y-3">
-                                            <h5 className="font-medium">Slot products</h5>
-                                            <Table>
-                                                <TableHeader>
-                                                    <TableRow>
-                                                        <TableHead>Img</TableHead>
-                                                        <TableHead>Name & Slug</TableHead>
-                                                        <TableHead>Variants</TableHead>
-                                                        <TableHead>Tags</TableHead>
-                                                        <TableHead>Badges</TableHead>
-                                                        <TableHead className="w-20">Action</TableHead>
-                                                    </TableRow>
-                                                </TableHeader>
-                                                <TableBody>
-                                                    {!selectedProducts.length && (
-                                                        <TableRow>
-                                                            <TableCell colSpan={6} className="text-center text-muted-foreground">
-                                                                No products in the slot.
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    )}
-
-                                                    {selectedProducts.map((product) => {
-                                                        const range = getProductPriceRange(product);
-                                                        const productTags = product.tags
-                                                            .map((code) => tagsByCode[code])
-                                                            .filter((tag): tag is PizzaTag => Boolean(tag));
-
-                                                        return (
-                                                            <TableRow key={product.id}>
-                                                                <TableCell>
-                                                                    <Image
-                                                                        src={product.img}
-                                                                        alt={product.name}
-                                                                        width={40}
-                                                                        height={40}
-                                                                        className="h-10 w-10 rounded-full object-cover border"
-                                                                    />
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    <p className="font-medium">{product.name}</p>
-                                                                    <p className="text-xs text-muted-foreground">{product.slug}</p>
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    {product.category === Category.PIZZA
-                                                                        ? (
-                                                                            <div className="text-xs">
-                                                                                <p>{product.pizzaDetails?.variants?.length ?? 0} variants</p>
-                                                                                <p className="text-muted-foreground">
-                                                                                    {formatPrice(range.min)} - {formatPrice(range.max)}
-                                                                                </p>
-                                                                            </div>
-                                                                        )
-                                                                        : (
-                                                                            <div className="text-xs">
-                                                                                <p>{product.drinkDetails?.volume ?? "No volume"}</p>
-                                                                                <p className="text-muted-foreground">{product.drinkDetails?.brand ?? "No brand"}</p>
-                                                                            </div>
-                                                                        )
-                                                                    }
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    <div className="flex flex-wrap gap-1 max-w-55">
-                                                                        {productTags.length > 0
-                                                                            ? productTags.map((tag) => (
-                                                                                <Badge
-                                                                                    key={`${product.id}-${tag.code}`}
-                                                                                    variant="outline"
-                                                                                    style={{
-                                                                                        backgroundColor: tag.color,
-                                                                                        borderColor: tag.color,
-                                                                                        color: getReadableTextColor(tag.color)
-                                                                                    }}
-                                                                                >
-                                                                                    {tag.name}
-                                                                                </Badge>
-                                                                            ))
-                                                                            : <span className="text-xs text-muted-foreground">-</span>
-                                                                        }
-                                                                    </div>
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    <div className="flex flex-wrap gap-1">
-                                                                        {product.isNew && (
-                                                                            <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100">
-                                                                                New
-                                                                            </Badge>
-                                                                        )}
-                                                                        {product.isBestSeller && (
-                                                                            <Badge className="bg-orange-100 text-orange-700 border-orange-200 hover:bg-orange-100">
-                                                                                Best Seller
-                                                                            </Badge>
-                                                                        )}
-                                                                        {!product.isNew && !product.isBestSeller && (
-                                                                            <span className="text-xs text-muted-foreground">-</span>
-                                                                        )}
-                                                                    </div>
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    <Button
-                                                                        type="button"
-                                                                        variant="ghost"
-                                                                        size="icon"
-                                                                        onClick={() => removeProductFromSlot(slot.id, product.id)}
-                                                                    >
-                                                                        <X className="h-4 w-4" />
-                                                                    </Button>
-                                                                </TableCell>
-                                                            </TableRow>
-                                                        );
-                                                    })}
-                                                </TableBody>
-                                            </Table>
-
-                                            <p className="text-sm text-muted-foreground">
-                                                Slot description (auto): {selectedProducts.length} product, from {formatPrice(slotMinPrice)} to {formatPrice(slotMaxPrice)}.
-                                            </p>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
+                    <ComboSlots
+                        slots={slots}
+                        activeSlotId={activeSlotId}
+                        loading={loading}
+                        tags={tags}
+                        tagsByCode={tagsByCode}
+                        pizzaSizes={pizzaSizes}
+                        pizzaSizesByCode={pizzaSizesByCode}
+                        productsById={productsById}
+                        defaultPizzaSizeCode={defaultPizzaSizeCode}
+                        setActiveSlotId={setActiveSlotId}
+                        addSlot={addSlot}
+                        removeSlot={removeSlot}
+                        setProductSearch={setProductSearch}
+                        setProductModalSlotId={setProductModalSlotId}
+                        updateSlot={updateSlot}
+                        addProductsByTag={addProductsByTag}
+                        removeTagFromSlot={removeTagFromSlot}
+                        removeProductFromSlot={removeProductFromSlot}
+                        pruneTagCodesByProducts={pruneTagCodesByProducts}
+                        isProductCompatibleWithSlot={isProductCompatibleWithSlot}
+                        getProductPriceRange={getProductPriceRange}
+                    />
 
                     <Button disabled={loading} className="ml-auto" type="submit">
                         {action}

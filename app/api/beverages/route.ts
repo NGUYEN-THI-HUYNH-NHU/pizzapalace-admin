@@ -17,13 +17,14 @@ export async function POST(req: Request) {
             isAvailable,
             isNew,
             isBestSeller,
+            drinkDetails
         } = body;
 
         if (!userId) {
             return new NextResponse("Unauthenticated", { status: 401 });
         }
 
-        if (!name || !slug || !desc || !img) {
+        if (!name || !slug || !desc || !img || !drinkDetails) {
             return new NextResponse("Missing required fields", { status: 400 });
         }
 
@@ -42,6 +43,7 @@ export async function POST(req: Request) {
                 isAvailable: Boolean(isAvailable),
                 isNew: Boolean(isNew),
                 isBestSeller: Boolean(isBestSeller),
+                drinkDetails
             }
         });
 

@@ -42,7 +42,8 @@ export async function PATCH(
             price,
             isAvailable,
             isNew,
-            isBestSeller
+            isBestSeller,
+            drinkDetails
         } = body;
         const { beverageId } = await params;
 
@@ -66,7 +67,8 @@ export async function PATCH(
                 price,
                 isAvailable,
                 isNew,
-                isBestSeller
+                isBestSeller,
+                drinkDetails
             },
         });
 

@@ -123,6 +123,7 @@ type ComboSlot {
 type ComboOption {
   productId String @db.ObjectId
   productName String
+  sizeRequirement String?
 }
 
 enum OrderStatus {

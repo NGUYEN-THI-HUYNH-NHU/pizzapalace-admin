@@ -20,7 +20,7 @@ const ComboPage = async ({
             }
         });
 
-    const [products, tags] = await Promise.all([
+    const [products, tags, pizzaSizes] = await Promise.all([
         prismadb.product.findMany({
             where: {
                 category: {
@@ -29,7 +29,8 @@ const ComboPage = async ({
                 isAvailable: true
             }
         }),
-        prismadb.pizzaTag.findMany({})
+        prismadb.pizzaTag.findMany({}),
+        prismadb.pizzaSize.findMany({})
     ]);
 
     if (comboId !== "new" && !combo) {
@@ -43,6 +44,7 @@ const ComboPage = async ({
                     initialData={combo}
                     products={products}
                     tags={tags}
+                    pizzaSizes={pizzaSizes}
                 />
             </div>
         </div>

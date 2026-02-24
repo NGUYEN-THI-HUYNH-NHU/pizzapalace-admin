@@ -30,6 +30,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 const formSchema = z.object({
     name: z.string().min(1),
     slug: z.string().min(1),
+    volume: z.string().min(1),
+    brand: z.string().min(1),
     desc: z.string().min(1),
     img: z.string().min(1),
     price: z.number().min(0.1),
@@ -74,6 +76,8 @@ export const BeverageForm: React.FC<PizzaFormProps> = ({
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: initialData?.name ?? "",
+            volume: initialData?.drinkDetails?.volume ?? "",
+            brand: initialData?.drinkDetails?.brand ?? "",
             slug: initialData?.slug ?? "",
             desc: initialData?.desc ?? "",
             img: initialData?.img ?? "",
@@ -226,6 +230,40 @@ export const BeverageForm: React.FC<PizzaFormProps> = ({
                                         <FormLabel>Slug (auto)</FormLabel>
                                         <FormControl>
                                             <Input disabled value={field.value} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <FormField
+                                control={form.control}
+                                name="volume"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Volumn</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                disabled={loading}
+                                                value={field.value}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="brand"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Brand</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                disabled={loading}
+                                                value={field.value}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>

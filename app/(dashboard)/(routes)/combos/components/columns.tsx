@@ -6,21 +6,19 @@ import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 import AvailabilityToggle from "@/components/ui/availability-toggle"
 
+import { currencyFormatter } from "@/lib/utils"
+
 export type Column = {
     id: string
     img: string
     name: string
     slug: string
+    notes: string
     basePrice: number
     isNew: boolean
     isBestSeller: boolean
     isAvailable: boolean
 }
-
-const currencyFormatter = new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND"
-});
 
 export const columns: ColumnDef<Column>[] = [
     {
@@ -46,6 +44,10 @@ export const columns: ColumnDef<Column>[] = [
                 <p className="text-xs text-muted-foreground">/{row.original.slug}</p>
             </div>
         )
+    },
+    {
+        accessorKey: "notes",
+        header: "Note",
     },
     {
         accessorKey: "basePrice",
