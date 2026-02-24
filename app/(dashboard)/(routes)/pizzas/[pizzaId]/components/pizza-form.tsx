@@ -453,7 +453,7 @@ export const PizzaForm: React.FC<PizzaFormProps> = ({
                                     <FormControl>
                                         <Input
                                             type="number"
-                                            step="1"
+                                            step="1000"
                                             disabled={loading}
                                             value={field.value}
                                             onChange={(event) => {

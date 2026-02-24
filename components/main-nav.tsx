@@ -12,9 +12,9 @@ export function MainNav({
 
     const routes = [
         {
-            href: `/dashboard`,
+            href: `/`,
             label: 'Dashboard',
-            active: pathname === `/dashboard`,
+            active: pathname === `/`,
         },
         {
             href: `/crusts`,
@@ -46,8 +46,8 @@ export function MainNav({
     return (
         <nav className={cn("flex items-center", className)}>
             <Link
-                href="/dashboard"
-                className="flex items-center mr-6"
+                href="/"
+                className="flex items-center"
             >
                 <Image
                     src="/logo.png"
