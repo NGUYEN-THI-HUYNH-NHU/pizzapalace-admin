@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { Category } from "@prisma/client";
 
 import prismadb from "@/lib/prismadb";
 
@@ -19,6 +20,18 @@ const ComboPage = async ({
             }
         });
 
+    const [products, tags] = await Promise.all([
+        prismadb.product.findMany({
+            where: {
+                category: {
+                    in: [Category.PIZZA, Category.DRINK]
+                },
+                isAvailable: true
+            }
+        }),
+        prismadb.pizzaTag.findMany({})
+    ]);
+
     if (comboId !== "new" && !combo) {
         notFound();
     }
@@ -28,6 +41,8 @@ const ComboPage = async ({
             <div className="flex-1 space-y-4 p-8 pt-6">
                 <ComboForm
                     initialData={combo}
+                    products={products}
+                    tags={tags}
                 />
             </div>
         </div>
