@@ -31,7 +31,7 @@ const formSchema = z.object({
     name: z.string().min(1),
     slug: z.string().min(1),
     volume: z.string().min(1),
-    brand: z.string().min(1),
+    brand: z.string().optional(),
     desc: z.string().min(1),
     img: z.string().min(1),
     price: z.number().min(0.1),
@@ -109,6 +109,10 @@ export const BeverageForm: React.FC<PizzaFormProps> = ({
                 isAvailable: data.isAvailable,
                 isNew: data.isNew,
                 isBestSeller: data.isBestSeller,
+                drinkDetails: {
+                    volume: data.volume,
+                    brand: data.brand?.trim() ? data.brand : undefined,
+                },
             };
 
             if (initialData) {
@@ -229,7 +233,7 @@ export const BeverageForm: React.FC<PizzaFormProps> = ({
                                     <FormItem>
                                         <FormLabel>Slug (auto)</FormLabel>
                                         <FormControl>
-                                            <Input disabled value={field.value} />
+                                            <Input disabled readOnly value={field.value} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -242,11 +246,11 @@ export const BeverageForm: React.FC<PizzaFormProps> = ({
                                 name="volume"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Volumn</FormLabel>
+                                        <FormLabel>Volume</FormLabel>
                                         <FormControl>
                                             <Input
                                                 disabled={loading}
-                                                value={field.value}
+                                                {...field}
                                             />
                                         </FormControl>
                                         <FormMessage />
@@ -262,7 +266,7 @@ export const BeverageForm: React.FC<PizzaFormProps> = ({
                                         <FormControl>
                                             <Input
                                                 disabled={loading}
-                                                value={field.value}
+                                                {...field}
                                             />
                                         </FormControl>
                                         <FormMessage />

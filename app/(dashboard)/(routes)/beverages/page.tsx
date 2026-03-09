@@ -29,6 +29,8 @@ const BeveragesPage = async () => {
         name: item.name,
         slug: item.slug,
         price: item.price,
+        volume: item.drinkDetails?.volume ?? '',
+        brand: item.drinkDetails?.brand ?? '',
         isNew: item.isNew,
         isBestSeller: item.isBestSeller,
         isAvailable: item.isAvailable,

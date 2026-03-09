@@ -41,6 +41,11 @@ export function MainNav({
             label: 'Combos',
             active: pathname === `/combos`,
         },
+        {
+            href: `/orders`,
+            label: 'Orders',
+            active: pathname === `/orders`,
+        },
     ];
 
     return (

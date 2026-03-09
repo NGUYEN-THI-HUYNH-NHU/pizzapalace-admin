@@ -12,6 +12,8 @@ export type Column = {
     name: string
     slug: string
     price: number
+    volume: string
+    brand: string
     isNew: boolean
     isBestSeller: boolean
     isAvailable: boolean
@@ -51,6 +53,16 @@ export const columns: ColumnDef<Column>[] = [
         accessorKey: "price",
         header: "Price",
         cell: ({ row }) => `${currencyFormatter.format(row.original.price)}`
+    },
+    {
+        accessorKey: "volume",
+        header: "Volume",
+        cell: ({ row }) => `${row.original.volume}`
+    },
+    {
+        accessorKey: "brand",
+        header: "Brand",
+        cell: ({ row }) => `${row.original.brand}`
     },
     {
         id: "badges",
