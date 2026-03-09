@@ -37,11 +37,30 @@ const ComboPage = async ({
         notFound();
     }
 
+    const comboInitialData = combo
+        ? {
+            ...combo,
+            comboDetails: combo.comboDetails
+                ? {
+                    slots: combo.comboDetails.slots.map((slot) => ({
+                        name: slot.name,
+                        quantity: slot.quantity,
+                        options: slot.options.map((option) => ({
+                            productId: option.productId,
+                            productName: option.productName,
+                            sizeRequirement: option.sizeRequirement ?? undefined
+                        }))
+                    }))
+                }
+                : null
+        }
+        : null;
+
     return (
         <div className="flex-col">
             <div className="flex-1 space-y-4 p-8 pt-6">
                 <ComboForm
-                    initialData={combo}
+                    initialData={comboInitialData}
                     products={products}
                     tags={tags}
                     pizzaSizes={pizzaSizes}
