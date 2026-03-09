@@ -4,6 +4,25 @@ import { NextResponse } from "next/server";
 
 import prismadb from "@/lib/prismadb";
 
+export async function GET() {
+    try {
+        const combos = await prismadb.product.findMany({
+            where: {
+                category: Category.COMBO,
+                isAvailable: true,
+            },
+            orderBy: {
+                createdAt: "desc",
+            },
+        });
+
+        return NextResponse.json(combos);
+    } catch (error) {
+        console.log("[COMBOS_GET]", error);
+        return new NextResponse("Internal error", { status: 500 });
+    }
+}
+
 export async function POST(req: Request) {
     try {
         const { userId } = await auth();
