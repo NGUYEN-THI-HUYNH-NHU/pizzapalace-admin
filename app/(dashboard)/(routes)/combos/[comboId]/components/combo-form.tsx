@@ -116,7 +116,13 @@ const getProductPriceRange = (product: ProductForSlot, sizeCode?: string) => {
 };
 
 const hasTagCode = (product: ProductForSlot, tagCode: string) => {
-    return (product.tags ?? []).some((tag) => tag.code === tagCode);
+    return (product.tags ?? []).some((tag) => {
+        if (typeof tag === "string") {
+            return tag === tagCode;
+        }
+
+        return tag.code === tagCode;
+    });
 };
 
 export const ComboForm: React.FC<ComboFormProps> = ({

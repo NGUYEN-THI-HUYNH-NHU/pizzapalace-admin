@@ -30,7 +30,10 @@ export interface SlotState {
     tagCodes: string[];
 }
 
-export interface ProductForSlot extends Omit<Product, "pizzaDetails" | "comboDetails" | "drinkDetails"> {
+type ProductTagValue = string | { code: string; name: string; color: string };
+
+export type ProductForSlot = Omit<Product, "pizzaDetails" | "comboDetails" | "drinkDetails" | "tags"> & {
+    tags: ProductTagValue[];
     pizzaDetails?: {
         variants?: {
             size: string;
@@ -42,7 +45,27 @@ export interface ProductForSlot extends Omit<Product, "pizzaDetails" | "comboDet
         volume?: string;
         brand?: string | null;
     } | null;
-}
+};
+
+const normalizeProductTags = (tags: ProductTagValue[]) => {
+    return tags
+        .map((tag) => {
+            if (typeof tag === "string") {
+                return {
+                    code: tag,
+                    name: tag,
+                    color: "#6b7280"
+                };
+            }
+
+            return {
+                code: tag.code,
+                name: tag.name,
+                color: tag.color
+            };
+        })
+        .filter((tag) => tag.code);
+};
 
 interface ComboSlotsProps {
     slots: SlotState[];
@@ -162,12 +185,7 @@ export const ComboSlots: React.FC<ComboSlotsProps> = ({
 
                             const slotTableData = selectedProducts.map((product) => {
                                 const range = getProductPriceRange(product, slot.type === "PIZZA" ? slot.pizzaSizeCode : undefined);
-                                const productTags = product.tags
-                                    .map((tag) => ({
-                                        code: tag.code,
-                                        name: tag.name,
-                                        color: tag.color
-                                    }));
+                                const productTags = normalizeProductTags(product.tags ?? []);
                                 const selectedPizzaSizeName = pizzaSizesByCode[slot.pizzaSizeCode]?.name ?? slot.pizzaSizeCode;
                                 const selectedSizeVariantCount = (product.pizzaDetails?.variants ?? []).filter((variant) => variant.size === slot.pizzaSizeCode).length;
 
