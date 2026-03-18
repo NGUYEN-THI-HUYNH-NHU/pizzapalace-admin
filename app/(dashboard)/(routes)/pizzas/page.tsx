@@ -23,16 +23,6 @@ const PizzasPage = async () => {
         }
     });
 
-    const pizzaTags = await prismadb.pizzaTag.findMany({
-        orderBy: {
-            createdAt: "desc"
-        }
-    });
-
-    const tagsByCode = new Map(
-        pizzaTags.map((tag) => [tag.code, { code: tag.code, name: tag.name, color: tag.color }])
-    );
-
     const formattedPizzas: Column[] = pizzas.map((item) => ({
         id: item.id,
         img: item.img,
@@ -41,7 +31,11 @@ const PizzasPage = async () => {
         basePrice: item.pizzaDetails?.variants?.length
             ? Math.min(...item.pizzaDetails.variants.map((variant) => variant.price))
             : item.price,
-        tags: (item.tags ?? []).map((code) => tagsByCode.get(code) ?? { code, name: code, color: "#6b7280" }),
+        tags: (item.tags ?? []).map((tag) => ({
+            code: tag.code,
+            name: tag.name,
+            color: tag.color
+        })),
         sizesCount: item.pizzaDetails?.sizes?.length ?? 0,
         crustsCount: item.pizzaDetails?.crusts?.length ?? 0,
         variantsCount: item.pizzaDetails?.variants?.length ?? 0,

@@ -115,6 +115,10 @@ const getProductPriceRange = (product: ProductForSlot, sizeCode?: string) => {
     };
 };
 
+const hasTagCode = (product: ProductForSlot, tagCode: string) => {
+    return (product.tags ?? []).some((tag) => tag.code === tagCode);
+};
+
 export const ComboForm: React.FC<ComboFormProps> = ({
     initialData,
     products,
@@ -284,7 +288,10 @@ export const ComboForm: React.FC<ComboFormProps> = ({
 
     const pruneTagCodesByProducts = (productIds: string[], tagCodes: string[]) => {
         return tagCodes.filter((tagCode) => {
-            return productIds.some((productId) => productsById[productId]?.tags.includes(tagCode));
+            return productIds.some((productId) => {
+                const product = productsById[productId];
+                return product ? hasTagCode(product, tagCode) : false;
+            });
         });
     };
 
@@ -297,7 +304,7 @@ export const ComboForm: React.FC<ComboFormProps> = ({
             const matchedProducts = products.filter((product) => {
                 return isProductCompatibleWithSlot(product, slot)
                     && product.isAvailable
-                    && product.tags.includes(tagCode);
+                    && hasTagCode(product, tagCode);
             });
 
             const mergedProductIds = Array.from(new Set([
@@ -317,7 +324,7 @@ export const ComboForm: React.FC<ComboFormProps> = ({
         updateSlot(slotId, (slot) => {
             const nextProductIds = slot.productIds.filter((productId) => {
                 const product = productsById[productId];
-                return !product?.tags.includes(tagCode);
+                return !product || !hasTagCode(product, tagCode);
             });
 
             const nextTagCodes = slot.tagCodes.filter((code) => code !== tagCode);

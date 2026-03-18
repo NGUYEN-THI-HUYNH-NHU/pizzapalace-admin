@@ -58,7 +58,7 @@ model Product {
   drinkDetails DrinkDetails?
   comboDetails ComboDetails?
 
-  tags String[] @default([])
+  tags ProductTag[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -72,6 +72,12 @@ model PizzaTag {
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+type ProductTag {
+  name String
+  code String
+  color String
 }
 
 // PIZZA

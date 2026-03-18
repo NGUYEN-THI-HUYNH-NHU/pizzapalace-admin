@@ -163,8 +163,11 @@ export const ComboSlots: React.FC<ComboSlotsProps> = ({
                             const slotTableData = selectedProducts.map((product) => {
                                 const range = getProductPriceRange(product, slot.type === "PIZZA" ? slot.pizzaSizeCode : undefined);
                                 const productTags = product.tags
-                                    .map((code) => tagsByCode[code])
-                                    .filter((tag): tag is PizzaTag => Boolean(tag));
+                                    .map((tag) => ({
+                                        code: tag.code,
+                                        name: tag.name,
+                                        color: tag.color
+                                    }));
                                 const selectedPizzaSizeName = pizzaSizesByCode[slot.pizzaSizeCode]?.name ?? slot.pizzaSizeCode;
                                 const selectedSizeVariantCount = (product.pizzaDetails?.variants ?? []).filter((variant) => variant.size === slot.pizzaSizeCode).length;
 

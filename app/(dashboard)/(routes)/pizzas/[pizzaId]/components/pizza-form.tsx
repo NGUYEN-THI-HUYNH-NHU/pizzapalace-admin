@@ -63,7 +63,7 @@ const formSchema = z.object({
     desc: z.string().min(1),
     img: z.string().min(1),
     price: z.number().min(1),
-    tags: z.array(z.string()),
+    tagCodes: z.array(z.string()),
     sizes: z.array(z.string()),
     crusts: z.array(z.string()),
     isAvailable: z.boolean(),
@@ -146,7 +146,15 @@ export const PizzaForm: React.FC<PizzaFormProps> = ({
             desc: initialData?.desc ?? "",
             img: initialData?.img ?? "",
             price: initialData?.price ?? 0,
-            tags: initialData?.tags ?? [],
+            tagCodes: (initialData?.tags ?? [])
+                .map((tag) => {
+                    if (typeof tag === "string") {
+                        return tag;
+                    }
+
+                    return tag?.code;
+                })
+                .filter((code): code is string => typeof code === "string" && code.length > 0),
             sizes: initialData?.pizzaDetails?.sizes ?? [],
             crusts: initialData?.pizzaDetails?.crusts ?? [],
             isAvailable: initialData?.isAvailable ?? true,
@@ -222,7 +230,13 @@ export const PizzaForm: React.FC<PizzaFormProps> = ({
                 desc: data.desc,
                 img: data.img,
                 price: data.price,
-                tags: data.tags,
+                tags: tags
+                    .filter((tag) => data.tagCodes.includes(tag.code))
+                    .map((tag) => ({
+                        name: tag.name,
+                        code: tag.code,
+                        color: tag.color
+                    })),
                 isAvailable: data.isAvailable,
                 isNew: data.isNew,
                 isBestSeller: data.isBestSeller,
@@ -474,7 +488,7 @@ export const PizzaForm: React.FC<PizzaFormProps> = ({
                         <h3 className="font-semibold">Tags</h3>
                         <FormField
                             control={form.control}
-                            name="tags"
+                            name="tagCodes"
                             render={({ field }) => {
                                 const selectedTags = tags.filter((tag) => field.value.includes(tag.code));
 
