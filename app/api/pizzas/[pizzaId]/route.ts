@@ -109,7 +109,7 @@ export async function PATCH(
                 desc,
                 img,
                 price,
-                tags: normalizedTags,
+                tags: tags === undefined ? undefined : normalizedTags,
                 isAvailable,
                 isNew,
                 isBestSeller,
