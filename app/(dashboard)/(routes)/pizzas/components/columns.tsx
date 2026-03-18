@@ -5,6 +5,7 @@ import { CellAction } from "./cell-actions"
 import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 import AvailabilityToggle from "@/components/ui/availability-toggle"
+import Tag from "@/components/ui/tag";
 
 export type Column = {
     id: string
@@ -29,24 +30,6 @@ const currencyFormatter = new Intl.NumberFormat("vi-VN", {
     style: "currency",
     currency: "VND"
 });
-
-const getReadableTextColor = (hexColor: string) => {
-    const sanitized = hexColor.replace("#", "");
-    const normalized = sanitized.length === 3
-        ? sanitized.split("").map((char) => `${char}${char}`).join("")
-        : sanitized;
-
-    if (!/^[0-9a-fA-F]{6}$/.test(normalized)) {
-        return "#ffffff";
-    }
-
-    const red = Number.parseInt(normalized.slice(0, 2), 16);
-    const green = Number.parseInt(normalized.slice(2, 4), 16);
-    const blue = Number.parseInt(normalized.slice(4, 6), 16);
-    const brightness = (red * 299 + green * 587 + blue * 114) / 1000;
-
-    return brightness > 160 ? "#111111" : "#ffffff";
-};
 
 export const columns: ColumnDef<Column>[] = [
     {
@@ -94,17 +77,7 @@ export const columns: ColumnDef<Column>[] = [
             <div className="flex flex-wrap gap-1">
                 {row.original.tags.length > 0 ? (
                     row.original.tags.map((tag) => (
-                        <Badge
-                            key={tag.code}
-                            variant="outline"
-                            style={{
-                                backgroundColor: tag.color,
-                                borderColor: tag.color,
-                                color: getReadableTextColor(tag.color)
-                            }}
-                        >
-                            {tag.name}
-                        </Badge>
+                        <Tag key={tag.code} name={tag.name} color={tag.color} />
                     ))
                 ) : (
                     <span className="text-xs text-muted-foreground">No tags</span>
