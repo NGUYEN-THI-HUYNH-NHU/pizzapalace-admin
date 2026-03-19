@@ -667,36 +667,62 @@ export const PizzaForm: React.FC<PizzaFormProps> = ({
 
                     <div className="space-y-3">
                         <h3 className="font-semibold">Section 6: Variants Matrix</h3>
-                        {!variantRows.length ? (
+                        {!selectedSizes.length || !selectedCrusts.length ? (
                             <p className="text-sm text-muted-foreground">
                                 Chọn Sizes và Crusts để tạo variants. Chỉ hiển thị cặp size/crust hợp lệ theo availableSizes của crust.
                             </p>
                         ) : (
-                            <div className="space-y-2">
-                                {variantRows.map((row) => {
-                                    const key = `${row.sizeCode}__${row.crustCode}`;
+                            <div className="overflow-x-auto rounded-md border">
+                                <table className="min-w-full border-collapse text-sm">
+                                    <thead>
+                                        <tr className="bg-muted/40">
+                                            <th className="border-b border-r px-3 py-2 text-left font-semibold">Crust / Size</th>
+                                            {selectedSizes.map((size) => (
+                                                <th key={size.code} className="border-b px-3 py-2 text-center font-semibold">
+                                                    {size.name} ({size.code})
+                                                </th>
+                                            ))}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {selectedCrusts.map((crust) => (
+                                            <tr key={crust.code}>
+                                                <td className="border-r border-t px-3 py-2 font-medium">
+                                                    {crust.name} ({crust.code})
+                                                </td>
+                                                {selectedSizes.map((size) => {
+                                                    const cellKey = `${size.code}__${crust.code}`;
+                                                    const isValidPair = (crust.availableSizes ?? []).includes(size.code);
 
-                                    return (
-                                        <div key={key} className="grid grid-cols-1 md:grid-cols-3 gap-3 items-center rounded-md border p-3">
-                                            <div className="text-sm font-medium md:col-span-2">
-                                                {row.sizeName} ({row.sizeCode}) + {row.crustName} ({row.crustCode})
-                                            </div>
-                                            <Input
-                                                type="number"
-                                                step="1"
-                                                disabled={loading}
-                                                value={variantPrices[key] ?? basePrice ?? 0}
-                                                onChange={(event) => {
-                                                    const parsed = Number(event.target.value);
-                                                    setVariantPrices((prev) => ({
-                                                        ...prev,
-                                                        [key]: Number.isFinite(parsed) ? parsed : basePrice
-                                                    }));
-                                                }}
-                                            />
-                                        </div>
-                                    );
-                                })}
+                                                    return (
+                                                        <td key={cellKey} className="border-t px-2 py-2 align-middle">
+                                                            {isValidPair ? (
+                                                                <Input
+                                                                    type="number"
+                                                                    step="1"
+                                                                    disabled={loading}
+                                                                    value={variantPrices[cellKey] ?? basePrice ?? 0}
+                                                                    onChange={(event) => {
+                                                                        const parsed = Number(event.target.value);
+                                                                        setVariantPrices((prev) => ({
+                                                                            ...prev,
+                                                                            [cellKey]: Number.isFinite(parsed) ? parsed : basePrice
+                                                                        }));
+                                                                    }}
+                                                                    className="h-9 min-w-28"
+                                                                />
+                                                            ) : (
+                                                                <div className="flex h-9 min-w-28 items-center justify-center rounded-md bg-muted/50 text-xs text-muted-foreground">
+                                                                    -
+                                                                </div>
+                                                            )}
+                                                        </td>
+                                                    );
+                                                })}
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
                         )}
                     </div>
