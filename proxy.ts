@@ -5,7 +5,9 @@ const isPublicApiRoute = createRouteMatcher([
     '/api/categories(.*)',
     '/api/pizzas(.*)',
     '/api/beverages(.*)',
-    '/api/combos(.*)'
+    '/api/combos(.*)',
+    '/api/users(.*)',
+    '/api/auth(.*)'
 ])
 
 export default clerkMiddleware(async (auth, req) => {
