@@ -42,6 +42,7 @@ export async function POST(req: Request) {
                 id: true,
                 name: true,
                 phone: true,
+                address: true,
                 role: true,
                 hashedPassword: true,
                 createdAt: true,
@@ -75,6 +76,7 @@ export async function POST(req: Request) {
             id: user.id,
             name: user.name,
             phone: user.phone,
+            address: user.address,
             role: user.role,
             createdAt: user.createdAt,
         };

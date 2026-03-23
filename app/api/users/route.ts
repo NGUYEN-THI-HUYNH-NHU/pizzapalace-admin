@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { Role } from "@prisma/client";
+import { Prisma, Role } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -92,6 +92,14 @@ export async function POST(req: Request) {
         return NextResponse.json(user, { status: 201, headers: CORS_HEADERS });
     } catch (error) {
         console.log("[USERS_POST]", error);
+
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+            return NextResponse.json(
+                { message: "Tài khoản đã tồn tại (trùng thông tin đăng ký)." },
+                { status: 409, headers: CORS_HEADERS }
+            );
+        }
+
         return NextResponse.json({ message: "Internal error" }, { status: 500, headers: CORS_HEADERS });
     }
 }
