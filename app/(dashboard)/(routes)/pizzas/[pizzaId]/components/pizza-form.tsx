@@ -47,6 +47,7 @@ interface PizzaDetailsInput {
     variants: {
         size: string;
         crust: string;
+        crustName?: string;
         price: number;
         sku: string;
         isAvailable: boolean;
@@ -218,6 +219,7 @@ export const PizzaForm: React.FC<PizzaFormProps> = ({
                 return {
                     size: row.sizeCode,
                     crust: row.crustCode,
+                    crustName: row.crustName,
                     price: Number(variantPrice),
                     sku: `${data.slug}-${row.sizeCode}-${row.crustCode}`.toLowerCase(),
                     isAvailable: true

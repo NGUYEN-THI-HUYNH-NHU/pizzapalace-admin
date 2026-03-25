@@ -103,6 +103,7 @@ model PizzaCrust {
 type PizzaVariant {
   size String
   crust String
+  crustName String?
   price Float
   sku String
   isAvailable Boolean @default(true)

@@ -4,6 +4,7 @@ const isPublicRoute = createRouteMatcher(['/sign-in(.*)'])
 const isPublicApiRoute = createRouteMatcher([
     '/api/categories(.*)',
     '/api/pizzas(.*)',
+    '/api/crusts(.*)',
     '/api/beverages(.*)',
     '/api/combos(.*)',
     '/api/users(.*)',

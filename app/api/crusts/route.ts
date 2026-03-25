@@ -3,28 +3,9 @@ import { NextResponse } from "next/server";
 
 import prismadb from "@/lib/prismadb";
 
-export async function GET(req: Request) {
+export async function GET() {
     try {
-        const { searchParams } = new URL(req.url);
-        const size = searchParams.get("size")?.trim();
-        const includeUnavailable = searchParams.get("includeUnavailable") === "true";
-
-        const where: {
-            isAvailable?: boolean;
-            availableSizes?: { has: string };
-        } = {};
-
-        if (!includeUnavailable) {
-            where.isAvailable = true;
-        }
-
-        if (size) {
-            where.availableSizes = { has: size };
-        }
-
         const crusts = await prismadb.pizzaCrust.findMany({
-            where,
-            orderBy: { name: "asc" },
             select: {
                 id: true,
                 name: true,
