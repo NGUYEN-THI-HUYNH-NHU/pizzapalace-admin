@@ -47,7 +47,7 @@ interface PizzaDetailsInput {
     variants: {
         size: string;
         crust: string;
-        crustName?: string;
+        crustName?: string | null;
         price: number;
         sku: string;
         isAvailable: boolean;
