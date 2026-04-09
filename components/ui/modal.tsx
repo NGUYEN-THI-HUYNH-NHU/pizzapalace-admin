@@ -3,7 +3,7 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface ModalProps {
-    classname: string;
+    classname?: string;
     title: string;
     description: string;
     isOpen: boolean;
