@@ -37,6 +37,7 @@ export const OrderModal: React.FC<OrderModalProps> = ({
 
     return (
         <Modal
+            classname="max-h-[90vh] overflow-hidden"
             title={order ? `Chi tiết đơn ${order.id}` : "Chi tiết đơn"}
             description={order ? `${order.customerName} - ${order.customerPhone}` : "Thông tin đơn hàng"}
             isOpen={isOpen}
@@ -72,7 +73,7 @@ export const OrderModal: React.FC<OrderModalProps> = ({
                         <p className="text-sm font-medium">Sản phẩm</p>
                         <div className="max-h-64 space-y-2 overflow-y-auto rounded-lg border p-3">
                             {order.orderItems.map((item) => (
-                                <div key={`${order.id}-${item.sku}`} className="flex items-start justify-between gap-4 rounded-md border bg-muted/20 p-3">
+                                <div key={`${order.id}-${item.productId}`} className="flex items-start justify-between gap-4 rounded-md border bg-muted/20 p-3">
                                     <div>
                                         <p className="font-medium">{item.productName}</p>
                                         <p className="text-xs text-muted-foreground">SKU: {item.sku}</p>

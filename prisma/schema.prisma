@@ -172,6 +172,8 @@ type OrderItem {
   sku String
   price Float
   quantity Int
+  crustName String?
+  crustSize String?
   selectedOptions SelectedOption[]
 }
 
@@ -180,11 +182,6 @@ type SelectedOption {
   v String
   productId String? @db.ObjectId
   sku String
-  subOptions SubOption[]
-}
-
-type SubOption {
-  name String
-  value String
-  price Float
+  crustName String?
+  crustSize String?
 }

@@ -10,6 +10,17 @@ type IncomingOrderItem = {
     price: number;
     quantity: number;
     img?: string;
+    size?: string;
+    crust?: string;
+    crustName?: string;
+    selectedOptions?: Array<{
+        k: string;
+        v: string;
+        productId?: string;
+        sku: string;
+        crustName?: string;
+        crustSize?: string;
+    }>;
 };
 
 type IncomingOrderPayload = {
@@ -32,6 +43,38 @@ const isObjectId = (value: string) => /^[a-fA-F0-9]{24}$/.test(value);
 
 const mapPaymentMethod = (method: string): PaymentMethod =>
     method?.toLowerCase() === "cash" ? PaymentMethod.CASH : PaymentMethod.ONLINE;
+
+const mergeOrderItems = (items: IncomingOrderItem[]) => {
+    const merged = new Map<string, IncomingOrderItem>();
+
+    items.forEach((item) => {
+        const key = [item.id, item.sku, item.name, item.price].join("|");
+        const existing = merged.get(key);
+
+        if (existing) {
+            merged.set(key, {
+                ...existing,
+                quantity: Number(existing.quantity ?? 0) + Number(item.quantity ?? 0),
+            });
+            return;
+        }
+
+        merged.set(key, { ...item, quantity: Number(item.quantity ?? 0) });
+    });
+
+    return Array.from(merged.values());
+};
+
+const normalizeSelectedOptions = (items: IncomingOrderItem["selectedOptions"] = []) => {
+    return items.map((option) => ({
+        k: option.k,
+        v: option.v,
+        productId: option.productId ?? null,
+        sku: option.sku,
+        crustName: option.crustName ?? null,
+        crustSize: option.crustSize ?? null,
+    }));
+};
 
 export async function GET(req: Request) {
     try {
@@ -70,6 +113,7 @@ export async function POST(req: Request) {
 
         const paymentMethod = mapPaymentMethod(body.paymentMethod);
         const normalizedUserId = typeof body.userId === "string" ? body.userId.trim() : "";
+        const orderItems = mergeOrderItems(body.cartItems);
 
         const order = await prismadb.order.create({
             data: {
@@ -81,13 +125,15 @@ export async function POST(req: Request) {
                 status: OrderStatus.PENDING,
                 paymentMethod,
                 isPaid: paymentMethod === PaymentMethod.ONLINE,
-                orderItems: body.cartItems.map((item) => ({
+                orderItems: orderItems.map((item) => ({
                     productId: String(item.id),
                     productName: item.name,
                     sku: item.sku,
                     price: Number(item.price ?? 0),
                     quantity: Number(item.quantity ?? 1),
-                    selectedOptions: [],
+                    crustName: item.crustName ?? null,
+                    crustSize: item.size ?? null,
+                    selectedOptions: normalizeSelectedOptions(item.selectedOptions),
                 })),
             },
         });

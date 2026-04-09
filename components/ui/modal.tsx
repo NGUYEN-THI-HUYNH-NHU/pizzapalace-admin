@@ -3,6 +3,7 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface ModalProps {
+    classname: string;
     title: string;
     description: string;
     isOpen: boolean;
@@ -11,6 +12,7 @@ interface ModalProps {
 };
 
 export const Modal: React.FC<ModalProps> = ({
+    classname,
     title,
     description,
     isOpen,
@@ -25,12 +27,12 @@ export const Modal: React.FC<ModalProps> = ({
 
     return (
         <Dialog open={isOpen} onOpenChange={onChange}>
-            <DialogContent>
+            <DialogContent className={classname}>
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
                     <DialogDescription>{description}</DialogDescription>
                 </DialogHeader>
-                <div>
+                <div className="max-h-[calc(90vh-140px)] overflow-y-auto pr-1">
                     {children}
                 </div>
             </DialogContent>
