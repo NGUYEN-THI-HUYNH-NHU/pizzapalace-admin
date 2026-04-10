@@ -55,16 +55,20 @@ const loadEnvFile = () => {
 loadEnvFile();
 
 const port = Number(process.env.PORT || process.env.REALTIME_PORT || 4001);
-const emitSecret = process.env.REALTIME_EMIT_SECRET;
-const rawOrigins = process.env.REALTIME_ALLOWED_ORIGINS;
-const allowedOrigins = rawOrigins.split(",").map((item) => item.trim()).filter(Boolean);
+const emitSecret = process.env.REALTIME_EMIT_SECRET || "pp-realtime-dev-secret";
+const rawOrigins = process.env.REALTIME_ALLOWED_ORIGINS || "*";
+const allowedOrigins =
+    rawOrigins === "*"
+        ? true
+        : rawOrigins.split(",").map((item) => item.trim()).filter(Boolean);
+const useCredentials = allowedOrigins !== true;
 
 const app = express();
 app.use(json());
 app.use(
     cors({
         origin: allowedOrigins,
-        credentials: true,
+        credentials: useCredentials,
     })
 );
 
@@ -72,7 +76,7 @@ const server = createServer(app);
 const io = new Server(server, {
     cors: {
         origin: allowedOrigins,
-        credentials: true,
+        credentials: useCredentials,
     },
 });
 
@@ -123,4 +127,6 @@ io.on("connection", (socket) => {
 server.listen(port, () => {
     // eslint-disable-next-line no-console
     console.log(`[realtime] Socket server running on port ${port}`);
+    // eslint-disable-next-line no-console
+    console.log(`[realtime] origins: ${rawOrigins}`);
 });
