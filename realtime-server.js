@@ -84,6 +84,10 @@ app.get("/health", (_req, res) => {
     res.json({ ok: true });
 });
 
+app.get("/", (_req, res) => {
+    res.json({ ok: true, service: "pizzapalace-admin-realtime" });
+});
+
 app.post("/emit", (req, res) => {
     const secret = req.headers["x-realtime-secret"];
     if (secret !== emitSecret) {
