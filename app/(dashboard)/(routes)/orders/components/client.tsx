@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { CircleCheck, ClockFading, Loader2, Package, RefreshCcw, Search, ShieldAlert, Sigma, Truck } from "lucide-react";
 import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import toast from "react-hot-toast";
+import { io, type Socket } from "socket.io-client";
 
 import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
@@ -29,6 +30,22 @@ import { Order } from "@prisma/client";
 
 type OrdersResponse = {
     orders: Order[];
+};
+
+type RealtimeOrderPayload = {
+    order?: Order;
+};
+
+const upsertOrder = (current: Order[], incomingOrder: Order) => {
+    const existingIndex = current.findIndex((order) => order.id === incomingOrder.id);
+
+    if (existingIndex === -1) {
+        return [incomingOrder, ...current];
+    }
+
+    const next = [...current];
+    next[existingIndex] = incomingOrder;
+    return next;
 };
 
 export default function OrdersClient() {
@@ -66,6 +83,39 @@ export default function OrdersClient() {
 
     useEffect(() => {
         loadOrders();
+    }, []);
+
+    useEffect(() => {
+        const realtimeUrl = process.env.NEXT_PUBLIC_REALTIME_URL;
+
+        const socket: Socket = io(realtimeUrl, {
+            transports: ["websocket"],
+        });
+
+        socket.on("connect", () => {
+            socket.emit("join:admin");
+        });
+
+        socket.on("order:new", (payload: RealtimeOrderPayload) => {
+            if (!payload?.order) {
+                return;
+            }
+
+            setOrders((current) => upsertOrder(current, payload.order!));
+        });
+
+        socket.on("order:updated", (payload: RealtimeOrderPayload) => {
+            if (!payload?.order) {
+                return;
+            }
+
+            setOrders((current) => upsertOrder(current, payload.order!));
+            setSelectedOrder((current) => (current?.id === payload.order!.id ? payload.order! : current));
+        });
+
+        return () => {
+            socket.disconnect();
+        };
     }, []);
 
     const filteredOrders = useMemo(() => {

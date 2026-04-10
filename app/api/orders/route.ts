@@ -2,6 +2,7 @@ import { OrderStatus, PaymentMethod } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 import prismadb from "@/lib/prismadb";
+import { emitRealtimeEvent } from "@/lib/realtime";
 
 type IncomingOrderItem = {
     id: string;
@@ -136,6 +137,12 @@ export async function POST(req: Request) {
                     selectedOptions: normalizeSelectedOptions(item.selectedOptions),
                 })),
             },
+        });
+
+        await emitRealtimeEvent({
+            event: "order:new",
+            payload: { order },
+            rooms: ["admins"],
         });
 
         return NextResponse.json({

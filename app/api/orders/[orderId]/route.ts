@@ -2,6 +2,7 @@ import { OrderStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 import prismadb from "@/lib/prismadb";
+import { emitRealtimeEvent } from "@/lib/realtime";
 
 const isOrderStatus = (value: string): value is OrderStatus => {
     return [
@@ -48,6 +49,12 @@ export async function PATCH(
                 id: orderId,
             },
             data: updateData,
+        });
+
+        await emitRealtimeEvent({
+            event: "order:updated",
+            payload: { order: updatedOrder },
+            rooms: ["admins", ...(updatedOrder.userId ? [`user:${updatedOrder.userId}`] : [])],
         });
 
         return NextResponse.json({ order: updatedOrder }, { status: 200 });
