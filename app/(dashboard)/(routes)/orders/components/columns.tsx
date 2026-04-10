@@ -4,44 +4,11 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn, currencyFormatter, formatDateTime } from "@/lib/utils";
-import { Order, OrderStatus, PaymentMethod } from "@prisma/client";
+import { Order } from "@prisma/client";
 import { CellAction } from "./cell-actions";
 import { CheckCircle2 } from "lucide-react";
+import { getNextStatus, PAYMENT_LABELS, STATUS_COLOR_MAP } from "@/lib/order-utils";
 
-
-export const STATUS_META: Record<OrderStatus, { label: string; className: string }> = {
-    [OrderStatus.PENDING]: { label: "Đã tiếp nhận", className: "bg-blue-100 text-blue-700 border-blue-200" },
-    [OrderStatus.PREPARING]: { label: "Đang chuẩn bị", className: "bg-amber-100 text-amber-700 border-amber-200" },
-    [OrderStatus.DELIVERING]: { label: "Đang giao", className: "bg-orange-100 text-orange-700 border-orange-200" },
-    [OrderStatus.COMPLETED]: { label: "Hoàn tất", className: "bg-emerald-100 text-emerald-700 border-emerald-200" },
-    [OrderStatus.CANCELLED]: { label: "Đã hủy", className: "bg-rose-100 text-rose-700 border-rose-200" },
-};
-
-export const PAYMENT_LABELS: Record<PaymentMethod, string> = {
-    [PaymentMethod.CASH]: "Tiền mặt",
-    [PaymentMethod.ONLINE]: "Trực tuyến",
-};
-
-export const STATUS_OPTIONS: Array<{ label: string; value: OrderStatus }> = [
-    { label: "Đã tiếp nhận", value: OrderStatus.PENDING },
-    { label: "Đang chuẩn bị", value: OrderStatus.PREPARING },
-    { label: "Đang giao", value: OrderStatus.DELIVERING },
-    { label: "Hoàn tất", value: OrderStatus.COMPLETED },
-    { label: "Đã hủy", value: OrderStatus.CANCELLED },
-];
-
-export const getNextStatus = (status: OrderStatus) => {
-    switch (status) {
-        case OrderStatus.PENDING:
-            return OrderStatus.PREPARING;
-        case OrderStatus.PREPARING:
-            return OrderStatus.DELIVERING;
-        case OrderStatus.DELIVERING:
-            return OrderStatus.COMPLETED;
-        default:
-            return null;
-    }
-};
 
 interface OrderColumnActions {
     onView: (order: Order) => void;
@@ -75,8 +42,8 @@ export const getOrderColumns = ({ onView, onAdvance, onCopyId }: OrderColumnActi
         accessorKey: "status",
         header: "Trạng thái",
         cell: ({ row }) => {
-            const meta = STATUS_META[row.original.status];
-            return <Badge variant="outline" className={cn(meta.className)}>{meta.label}</Badge>;
+            const colorMap = STATUS_COLOR_MAP[row.original.status];
+            return <Badge variant="outline" className={cn(colorMap.className)}>{colorMap.label}</Badge>;
         },
     },
     {
@@ -114,7 +81,7 @@ export const getOrderColumns = ({ onView, onAdvance, onCopyId }: OrderColumnActi
             return (
                 <Button size="sm" variant="outline" onClick={() => onAdvance(row.original)}>
                     <CheckCircle2 className="mr-2 h-4 w-4" />
-                    {STATUS_META[nextStatus].label}
+                    {STATUS_COLOR_MAP[nextStatus].label}
                 </Button>
             );
         },

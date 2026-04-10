@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { cn, currencyFormatter, formatDateTime } from "@/lib/utils";
 import { Order, OrderStatus } from "@prisma/client";
-import { PAYMENT_LABELS, STATUS_META, STATUS_OPTIONS } from "./columns";
+import { PAYMENT_LABELS, STATUS_COLOR_MAP, STATUS_OPTIONS } from "@/lib/order-utils";
 
 interface OrderModalProps {
     order: Order | null;
@@ -102,8 +102,8 @@ export const OrderModal: React.FC<OrderModalProps> = ({
                     </div>
 
                     <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-                        <Badge variant="outline" className={cn(STATUS_META[status].className)}>
-                            {STATUS_META[status].label}
+                        <Badge variant="outline" className={cn(STATUS_COLOR_MAP[status].className)}>
+                            {STATUS_COLOR_MAP[status].label}
                         </Badge>
 
                         <div className="flex flex-wrap gap-2">

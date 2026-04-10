@@ -25,8 +25,9 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { OrderModal } from "./modal";
-import { getNextStatus, getOrderColumns } from "./columns";
+import { getOrderColumns } from "./columns";
 import { Order } from "@prisma/client";
+import { getNextStatus } from "@/lib/order-utils";
 
 type OrdersResponse = {
     orders: Order[];
