@@ -71,18 +71,22 @@ export const OrderModal: React.FC<OrderModalProps> = ({
 
                     <div className="space-y-3">
                         <p className="text-sm font-medium">Sản phẩm</p>
-                        <div className="max-h-64 space-y-2 overflow-y-auto rounded-lg border p-3">
-                            {order.orderItems.map((item) => (
-                                <div key={`${order.id}-${item.productId}`} className="flex items-start justify-between gap-4 rounded-md border bg-muted/20 p-3">
+                        {order.orderItems.map((item) => (
+                            <div
+                                key={`${order.id}-${item.productId}`}
+                                className="flex gap-2 items-center"
+                            >
+                                <span className="text-sm">{item.quantity} x</span>
+                                <div className="flex flex-1 items-start justify-between gap-4 rounded-md border bg-muted/20 p-3">
                                     <div>
                                         <p className="font-medium">{item.productName}</p>
-                                        <p className="text-xs text-muted-foreground">SKU: {item.sku}</p>
-                                        <p className="text-xs text-muted-foreground">SL: {item.quantity}</p>
+                                        <p className="text-sm text-muted-foreground"> {item.crustName && item.crustSize ? `${item.crustName} - ${item.crustSize}` : ''}</p>
                                     </div>
                                     <p className="font-semibold">{currencyFormatter.format(item.price * item.quantity)}</p>
                                 </div>
-                            ))}
-                        </div>
+                            </div>
+
+                        ))}
                     </div>
 
                     <div className="space-y-2">

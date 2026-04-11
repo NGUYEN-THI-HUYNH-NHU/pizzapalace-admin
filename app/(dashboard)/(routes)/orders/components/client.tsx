@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CircleCheck, ClockFading, Loader2, Package, RefreshCcw, Search, ShieldAlert, Sigma, Truck } from "lucide-react";
+import { CircleCheck, ClockFading, Loader2, Package, Search, ShieldAlert, Sigma, Truck } from "lucide-react";
 import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import toast from "react-hot-toast";
 import { io, type Socket } from "socket.io-client";
@@ -212,10 +212,6 @@ export default function OrdersClient() {
                     title={`Orders (${summary.total})`}
                     description="Manage store orders, update fulfillment status, and review customer details."
                 />
-                <Button variant="outline" onClick={loadOrders} disabled={loading}>
-                    {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCcw className="mr-2 h-4 w-4" />}
-                    Refresh
-                </Button>
             </div>
 
             <div className="grid gap-4 md:grid-cols-4">

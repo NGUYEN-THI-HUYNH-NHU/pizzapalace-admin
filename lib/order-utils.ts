@@ -13,6 +13,14 @@ export const PAYMENT_LABELS: Record<PaymentMethod, string> = {
     [PaymentMethod.ONLINE]: "Trực tuyến",
 };
 
+export const STATUS_LABELS: Record<OrderStatus, string> = {
+    [OrderStatus.PENDING]: "Đã tiếp nhận",
+    [OrderStatus.PREPARING]: "Đang chuẩn bị",
+    [OrderStatus.DELIVERING]: "Đang giao",
+    [OrderStatus.COMPLETED]: "Hoàn tất",
+    [OrderStatus.CANCELLED]: "Đã hủy",
+};
+
 export const STATUS_OPTIONS: Array<{ label: string; value: OrderStatus }> = [
     { label: "Đã tiếp nhận", value: OrderStatus.PENDING },
     { label: "Đang chuẩn bị", value: OrderStatus.PREPARING },
