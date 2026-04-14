@@ -17,6 +17,8 @@ const ChickenPage = async ({
             }
         });
 
+    const tags = await prismadb.pizzaTag.findMany({});
+
     if (chickenId !== "new" && !chicken) {
         notFound();
     }
@@ -24,7 +26,10 @@ const ChickenPage = async ({
     return (
         <div className="flex-col">
             <div className="flex-1 space-y-4 p-8 pt-6">
-                <ChickenForm initialData={chicken} />
+                <ChickenForm
+                    initialData={chicken}
+                    tags={tags}
+                />
             </div>
         </div>
     );

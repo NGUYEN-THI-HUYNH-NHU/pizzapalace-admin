@@ -33,6 +33,7 @@ export async function POST(req: Request) {
             desc,
             img,
             price,
+            tags,
             isAvailable,
             isNew,
             isBestSeller
@@ -58,6 +59,7 @@ export async function POST(req: Request) {
                 desc,
                 img,
                 price,
+                tags,
                 isAvailable: Boolean(isAvailable),
                 isNew: Boolean(isNew),
                 isBestSeller: Boolean(isBestSeller)

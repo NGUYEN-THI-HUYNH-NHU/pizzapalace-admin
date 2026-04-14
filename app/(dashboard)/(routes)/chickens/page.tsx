@@ -29,6 +29,11 @@ const ChickensPage = async () => {
         name: item.name,
         slug: item.slug,
         price: item.price,
+        tags: (item.tags ?? []).map((tag) => ({
+            code: tag.code,
+            name: tag.name,
+            color: tag.color
+        })),
         isNew: item.isNew,
         isBestSeller: item.isBestSeller,
         isAvailable: item.isAvailable,

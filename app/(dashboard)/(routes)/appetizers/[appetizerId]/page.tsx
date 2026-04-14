@@ -18,6 +18,8 @@ const AppetizerPage = async ({
             }
         });
 
+    const tags = await prismadb.pizzaTag.findMany({});
+
     if (appetizerId !== "new" && !appetizer) {
         notFound();
     }
@@ -25,7 +27,7 @@ const AppetizerPage = async ({
     return (
         <div className="flex-col">
             <div className="flex-1 space-y-4 p-8 pt-6">
-                <AppetizerForm initialData={appetizer} />
+                <AppetizerForm initialData={appetizer} tags={tags} />
             </div>
         </div>
     );

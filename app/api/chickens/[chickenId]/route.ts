@@ -40,6 +40,7 @@ export async function PATCH(
             desc,
             img,
             price,
+            tags,
             isAvailable,
             isNew,
             isBestSeller
@@ -64,6 +65,7 @@ export async function PATCH(
                 desc,
                 img,
                 price,
+                tags,
                 isAvailable,
                 isNew,
                 isBestSeller
@@ -90,7 +92,7 @@ export async function DELETE(
         }
 
         if (!chickenId) {
-            return new NextResponse("Pizza id is required", { status: 400 });
+            return new NextResponse("Chicken id is required", { status: 400 });
         }
 
         const chicken = await prismadb.product.delete({

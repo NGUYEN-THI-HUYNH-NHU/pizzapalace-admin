@@ -40,6 +40,7 @@ export async function PATCH(
             desc,
             img,
             price,
+            tags,
             isAvailable,
             isNew,
             isBestSeller
@@ -64,6 +65,7 @@ export async function PATCH(
                 desc,
                 img,
                 price,
+                tags,
                 isAvailable,
                 isNew,
                 isBestSeller

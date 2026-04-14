@@ -33,6 +33,7 @@ export async function POST(req: Request) {
             desc,
             img,
             price,
+            tags,
             isAvailable,
             isNew,
             isBestSeller
@@ -42,7 +43,7 @@ export async function POST(req: Request) {
             return new NextResponse("Unauthenticated", { status: 401 });
         }
 
-        if (!name || !slug || !desc || !img) {
+        if (!name || !slug || !desc || !img || tags) {
             return new NextResponse("Missing required fields", { status: 400 });
         }
 
@@ -58,6 +59,7 @@ export async function POST(req: Request) {
                 desc,
                 img,
                 price,
+                tags,
                 isAvailable: Boolean(isAvailable),
                 isNew: Boolean(isNew),
                 isBestSeller: Boolean(isBestSeller)

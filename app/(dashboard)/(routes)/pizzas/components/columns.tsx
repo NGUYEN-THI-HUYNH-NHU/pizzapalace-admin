@@ -6,6 +6,7 @@ import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 import AvailabilityToggle from "@/components/ui/availability-toggle"
 import Tag from "@/components/ui/tag";
+import { currencyFormatter } from "@/lib/utils"
 
 export type Column = {
     id: string
@@ -25,11 +26,6 @@ export type Column = {
     isBestSeller: boolean
     isAvailable: boolean
 }
-
-const currencyFormatter = new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND"
-});
 
 export const columns: ColumnDef<Column>[] = [
     {

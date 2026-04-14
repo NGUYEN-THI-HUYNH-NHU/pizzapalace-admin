@@ -2,14 +2,14 @@
 
 import * as z from "zod";
 import { useState } from "react";
-import { Trash } from "lucide-react";
+import { Trash, X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { useParams, useRouter } from "next/navigation";
 
-import { Product } from "@prisma/client";
+import { PizzaTag, Product } from "@prisma/client";
 
 import { Heading } from "@/components/ui/heading";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,14 @@ import { Input } from "@/components/ui/input";
 import { AlertModal } from "@/components/modals/alert-modal";
 import ImageUpload from "@/components/ui/image-upload";
 import { Checkbox } from "@/components/ui/checkbox";
-import { normalizeSlug } from "@/lib/product-utils";
+import { getReadableTextColor, normalizeSlug } from "@/lib/product-utils";
+import { Badge } from "@/components/ui/badge";
+import {
+    DropdownMenu,
+    DropdownMenuCheckboxItem,
+    DropdownMenuContent,
+    DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 
 const formSchema = z.object({
     name: z.string().min(1),
@@ -34,6 +41,7 @@ const formSchema = z.object({
     desc: z.string().min(1),
     img: z.string().min(1),
     price: z.number().min(0.1),
+    tagCodes: z.array(z.string()),
     isAvailable: z.boolean(),
     isNew: z.boolean(),
     isBestSeller: z.boolean()
@@ -43,10 +51,12 @@ type ChickenFormValues = z.infer<typeof formSchema>;
 
 interface ChickenFormProps {
     initialData: Product | null;
+    tags: PizzaTag[];
 }
 
 export const ChickenForm: React.FC<ChickenFormProps> = ({
-    initialData
+    initialData,
+    tags
 }) => {
     const params = useParams();
     const router = useRouter();
@@ -67,6 +77,15 @@ export const ChickenForm: React.FC<ChickenFormProps> = ({
             desc: initialData?.desc ?? "",
             img: initialData?.img ?? "",
             price: initialData?.price ?? 0,
+            tagCodes: (initialData?.tags ?? [])
+                .map((tag) => {
+                    if (typeof tag === "string") {
+                        return tag;
+                    }
+
+                    return tag?.code;
+                })
+                .filter((code): code is string => typeof code === "string" && code.length > 0),
             isAvailable: initialData?.isAvailable ?? true,
             isNew: initialData?.isNew ?? true,
             isBestSeller: initialData?.isBestSeller ?? false
@@ -91,7 +110,13 @@ export const ChickenForm: React.FC<ChickenFormProps> = ({
                 desc: data.desc,
                 img: data.img,
                 price: data.price,
-                isAvailable: data.isAvailable,
+                tags: tags
+                    .filter((tag) => data.tagCodes.includes(tag.code))
+                    .map((tag) => ({
+                        name: tag.name,
+                        code: tag.code,
+                        color: tag.color
+                    })), isAvailable: data.isAvailable,
                 isNew: data.isNew,
                 isBestSeller: data.isBestSeller,
             };
@@ -301,6 +326,87 @@ export const ChickenForm: React.FC<ChickenFormProps> = ({
                                 )}
                             />
                         </div>
+                    </div>
+
+                    <Separator />
+
+                    <div className="space-y-3">
+                        <h3 className="font-semibold">Tags</h3>
+                        <FormField
+                            control={form.control}
+                            name="tagCodes"
+                            render={({ field }) => {
+                                const selectedTags = tags.filter((tag) => field.value.includes(tag.code));
+
+                                return (
+                                    <FormItem>
+                                        <FormLabel>Select tags</FormLabel>
+                                        <FormControl>
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button type="button" variant="outline" className="w-full justify-between">
+                                                            {field.value.length > 0
+                                                                ? `Selected ${field.value.length} tag(s)`
+                                                                : "Choose tags"}
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent className="w-70">
+                                                        {tags.map((tag) => {
+                                                            const isSelected = field.value.includes(tag.code);
+
+                                                            return (
+                                                                <DropdownMenuCheckboxItem
+                                                                    key={tag.id}
+                                                                    checked={isSelected}
+                                                                    onSelect={(event) => event.preventDefault()}
+                                                                    onCheckedChange={(checked) => {
+                                                                        if (checked === true) {
+                                                                            field.onChange([...field.value, tag.code]);
+                                                                            return;
+                                                                        }
+
+                                                                        field.onChange(field.value.filter((code) => code !== tag.code));
+                                                                    }}
+                                                                >
+                                                                    {tag.name}
+                                                                </DropdownMenuCheckboxItem>
+                                                            );
+                                                        })}
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+
+                                                {selectedTags.length > 0 && (
+                                                    <div className="flex flex-wrap items-center gap-2 col-span-2">
+                                                        {selectedTags.map((tag) => (
+                                                            <Badge
+                                                                key={tag.id}
+                                                                variant="outline"
+                                                                style={{
+                                                                    backgroundColor: tag.color,
+                                                                    borderColor: tag.color,
+                                                                    color: getReadableTextColor(tag.color)
+                                                                }}
+                                                            >
+                                                                {tag.name}
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => field.onChange(field.value.filter((code) => code !== tag.code))}
+                                                                    className="inline-flex"
+                                                                >
+                                                                    <X className="h-3 w-3" />
+                                                                </button>
+                                                            </Badge>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                );
+                            }}
+                        />
                     </div>
 
                     <Separator />
