@@ -33,6 +33,7 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import { normalizeSlug } from "@/lib/product-utils";
 
 interface VariantRow {
     sizeCode: string;
@@ -80,18 +81,6 @@ interface PizzaFormProps {
     crusts: PizzaCrust[];
     tags: PizzaTag[];
 }
-
-const normalizeSlug = (value: string) =>
-    value
-        .trim()
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/đ/g, "d")
-        .replace(/[^a-z0-9\s-]/g, "")
-        .replace(/\s+/g, "-")
-        .replace(/-+/g, "-")
-        .replace(/^-|-$/g, "");
 
 const getReadableTextColor = (hexColor: string) => {
     const sanitized = hexColor.replace("#", "");

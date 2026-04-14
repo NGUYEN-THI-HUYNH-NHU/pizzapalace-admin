@@ -3,19 +3,19 @@
 import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 
+import { CatalogFilters, useCatalogFilters } from "@/components/filters/catalog-filters";
 import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
 import { DataTable } from "@/components/ui/data-table";
 import { ApiList } from "@/components/ui/api-list";
-import { CatalogFilters, useCatalogFilters } from "@/components/filters/catalog-filters";
 import { Column, columns } from "./columns";
 
-interface PizzasClientProps {
+interface AppetizersClientProps {
     data: Column[]
 }
 
-const PizzasClient: React.FC<PizzasClientProps> = ({
+const AppetizersClient: React.FC<AppetizersClientProps> = ({
     data
 }) => {
     const router = useRouter();
@@ -41,21 +41,20 @@ const PizzasClient: React.FC<PizzasClientProps> = ({
         supportsTagFilter
     } = useCatalogFilters({
         data,
-        getPrice: (pizza) => pizza.basePrice,
-        getIsAvailable: (pizza) => pizza.isAvailable,
-        getIsNew: (pizza) => pizza.isNew,
-        getIsBestSeller: (pizza) => pizza.isBestSeller,
-        getTags: (pizza) => pizza.tags
+        getPrice: (appetizer) => appetizer.price,
+        getIsAvailable: (appetizer) => appetizer.isAvailable,
+        getIsNew: (appetizer) => appetizer.isNew,
+        getIsBestSeller: (appetizer) => appetizer.isBestSeller
     });
 
     return (
         <div>
             <div className="flex items-center justify-between" >
                 <Heading
-                    title={`Pizzas (${data.length})`}
-                    description="Manage pizzas for your store."
+                    title={`Appetizers (${data.length})`}
+                    description="Manage appetizers for your store."
                 />
-                <Button onClick={() => router.push(`/pizzas/new`)}>
+                <Button onClick={() => router.push(`/appetizers/new`)}>
                     <Plus className="mr-2 h-4 w-4" />
                     Add New
                 </Button>
@@ -88,22 +87,22 @@ const PizzasClient: React.FC<PizzasClientProps> = ({
                 columns={columns}
                 data={filteredData}
                 searchKeys={["name"]}
-                searchPlaceholder="Tìm kiếm theo tên pizza"
+                searchPlaceholder="Tìm kiếm theo tên món khai vị..."
                 getRowClassName={(row) => row.isAvailable ? "" : "bg-red-50/80 dark:bg-red-950/20"}
             />
             <Heading
                 title="API"
-                description="API calls for pizzas"
+                description="API calls for appetizers"
             />
 
             <Separator className="my-2" />
 
             <ApiList
-                entityName="pizzas"
-                entityIdName="pizzaId"
+                entityName="appetizers"
+                entityIdName="appetizerId"
             />
         </div>
     );
 };
 
-export default PizzasClient;
+export default AppetizersClient;

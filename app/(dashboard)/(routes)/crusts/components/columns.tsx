@@ -16,7 +16,7 @@ export type Column = {
 export const columns: ColumnDef<Column>[] = [
     {
         accessorKey: "name",
-        header: "Name",
+        header: "Tên",
     },
     {
         accessorKey: "code",
@@ -24,7 +24,7 @@ export const columns: ColumnDef<Column>[] = [
     },
     {
         accessorKey: "availableSizes",
-        header: "Sizes",
+        header: "Cỡ",
         cell: ({ row }) => {
             const sizes = row.original.availableSizes ?? [];
 
@@ -43,7 +43,7 @@ export const columns: ColumnDef<Column>[] = [
     },
     {
         accessorKey: "isAvailable",
-        header: "Available",
+        header: "Sẵn sàng",
         cell: ({ row }) => (
             <AvailabilityToggle
                 id={row.original.id}

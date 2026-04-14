@@ -37,7 +37,8 @@ const CrustsClient: React.FC<CrustsClientProps> = ({
             <DataTable
                 columns={columns}
                 data={data}
-                searchKey="name"
+                searchKeys={["name"]}
+                searchPlaceholder="Tìm kiếm theo tên đế..."
                 getRowClassName={(row) => row.isAvailable ? "" : "bg-red-50/60 dark:bg-red-950/20"}
             />
 

@@ -86,7 +86,8 @@ const CombosClient: React.FC<CombosClientProps> = ({
             <DataTable
                 columns={columns}
                 data={filteredData}
-                searchKey="name"
+                searchKeys={["name"]}
+                searchPlaceholder="Tìm kiếm theo tên combo..."
                 getRowClassName={(row) => row.isAvailable ? "" : "bg-red-50/80 dark:bg-red-950/20"}
             />
             <Heading

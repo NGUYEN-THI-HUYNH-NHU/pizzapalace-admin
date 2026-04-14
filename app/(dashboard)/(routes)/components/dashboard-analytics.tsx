@@ -15,7 +15,7 @@ interface DashboardAnalyticsProps {
     categoryBreakdown: BreakdownItem[];
 }
 
-const chartColors = ["#f97316", "#ef4444", "#14b8a6", "#8b5cf6", "#0f172a", "#f59e0b"];
+const chartColors = ["#ecc94b", "#ef4444", "#14b8a6", "#8b5cf6", "#0f172a", "#f59e0b"];
 
 const RevenueTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ value?: number }>; label?: string }) => {
     if (!active || !payload?.length) {
@@ -43,7 +43,7 @@ export const DashboardAnalytics = ({
                         <CardTitle className="text-xl">Phân tích & biểu đồ</CardTitle>
                         <CardDescription>Biểu đồ doanh thu, trạng thái đơn hàng và cơ cấu danh mục.</CardDescription>
                     </div>
-                    <Badge variant="outline" className="rounded-full border-amber-200 bg-amber-50 text-amber-700">
+                    <Badge variant="outline" className="rounded-full border-yellow-200 bg-yellow-50 text-yellow-700">
                         12 tháng gần nhất
                     </Badge>
                 </div>
@@ -68,14 +68,14 @@ export const DashboardAnalytics = ({
                                         <AreaChart data={revenueByMonth} margin={{ top: 10, right: 8, left: -20, bottom: 0 }}>
                                             <defs>
                                                 <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="5%" stopColor="#f97316" stopOpacity={0.35} />
-                                                    <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
+                                                    <stop offset="5%" stopColor="#ecc94b" stopOpacity={0.35} />
+                                                    <stop offset="95%" stopColor="#ecc94b" stopOpacity={0} />
                                                 </linearGradient>
                                             </defs>
                                             <XAxis dataKey="name" axisLine={false} tickLine={false} />
                                             <YAxis axisLine={false} tickLine={false} width={60} tickFormatter={(value) => `${Number(value) / 1000000}tr`} />
                                             <Tooltip content={<RevenueTooltip />} />
-                                            <Area type="monotone" dataKey="total" stroke="#f97316" fill="url(#revenueGradient)" strokeWidth={3} />
+                                            <Area type="monotone" dataKey="total" stroke="#ecc94b" fill="url(#revenueGradient)" strokeWidth={3} />
                                         </AreaChart>
                                     </ResponsiveContainer>
                                 </CardContent>

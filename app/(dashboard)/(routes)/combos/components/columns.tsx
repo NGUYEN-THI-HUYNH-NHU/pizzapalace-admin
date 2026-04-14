@@ -23,7 +23,7 @@ export type Column = {
 export const columns: ColumnDef<Column>[] = [
     {
         accessorKey: "img",
-        header: "Image",
+        header: "Ảnh",
         cell: ({ row }) => (
             <div className="relative h-11 w-11 overflow-hidden rounded-full border">
                 <Image
@@ -37,7 +37,7 @@ export const columns: ColumnDef<Column>[] = [
     },
     {
         accessorKey: "name",
-        header: "Name & Slug",
+        header: "Tên & Slug",
         cell: ({ row }) => (
             <div>
                 <p className="font-semibold">{row.original.name}</p>
@@ -47,11 +47,11 @@ export const columns: ColumnDef<Column>[] = [
     },
     {
         accessorKey: "notes",
-        header: "Note",
+        header: "Ghi chú",
     },
     {
         accessorKey: "basePrice",
-        header: "Price",
+        header: "Giá",
         cell: ({ row }) => `${currencyFormatter.format(row.original.basePrice)}`
     },
     {
@@ -70,7 +70,7 @@ export const columns: ColumnDef<Column>[] = [
     },
     {
         accessorKey: "isAvailable",
-        header: "Available",
+        header: "Sẵn sàng",
         cell: ({ row }) => (
             <AvailabilityToggle
                 id={row.original.id}

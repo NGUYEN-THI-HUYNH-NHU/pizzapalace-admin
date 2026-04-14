@@ -37,6 +37,16 @@ export function MainNav({
             active: pathname === `/beverages`,
         },
         {
+            href: `/chickens`,
+            label: 'Chickens',
+            active: pathname === `/chickens`,
+        },
+        {
+            href: `/appetizers`,
+            label: 'Appetizers',
+            active: pathname === `/appetizers`,
+        },
+        {
             href: `/combos`,
             label: 'Combos',
             active: pathname === `/combos`,

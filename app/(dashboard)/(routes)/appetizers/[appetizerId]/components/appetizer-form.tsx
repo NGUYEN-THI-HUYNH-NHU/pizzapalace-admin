@@ -31,8 +31,6 @@ import { normalizeSlug } from "@/lib/product-utils";
 const formSchema = z.object({
     name: z.string().min(1),
     slug: z.string().min(1),
-    volume: z.string().min(1),
-    brand: z.string().optional(),
     desc: z.string().min(1),
     img: z.string().min(1),
     price: z.number().min(0.1),
@@ -41,13 +39,13 @@ const formSchema = z.object({
     isBestSeller: z.boolean()
 });
 
-type BeverageFormValues = z.infer<typeof formSchema>;
+type AppetizerFormValues = z.infer<typeof formSchema>;
 
-interface BeverageFormProps {
+interface AppetizerFormProps {
     initialData: Product | null;
 }
 
-export const BeverageForm: React.FC<BeverageFormProps> = ({
+export const AppetizerForm: React.FC<AppetizerFormProps> = ({
     initialData
 }) => {
     const params = useParams();
@@ -56,17 +54,15 @@ export const BeverageForm: React.FC<BeverageFormProps> = ({
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    const title = initialData ? "Edit beverage" : "Create beverage";
-    const description = initialData ? "Edit a beverage" : "Add a new beverage";
-    const toastMessage = initialData ? "Beverage updated." : "Beverage created.";
+    const title = initialData ? "Edit appetizer" : "Create appetizer";
+    const description = initialData ? "Edit a appetizer" : "Add a new appetizer";
+    const toastMessage = initialData ? "Appetizer updated." : "Appetizer created.";
     const action = initialData ? "Save changes" : "Create";
 
-    const form = useForm<BeverageFormValues>({
+    const form = useForm<AppetizerFormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: initialData?.name ?? "",
-            volume: initialData?.drinkDetails?.volume ?? "",
-            brand: initialData?.drinkDetails?.brand ?? "",
             slug: initialData?.slug ?? "",
             desc: initialData?.desc ?? "",
             img: initialData?.img ?? "",
@@ -85,7 +81,7 @@ export const BeverageForm: React.FC<BeverageFormProps> = ({
     const areAllFlagsSelected = selectedFlagsCount === 3;
     const areSomeFlagsSelected = selectedFlagsCount > 0 && selectedFlagsCount < 3;
 
-    const onSubmit = async (data: BeverageFormValues) => {
+    const onSubmit = async (data: AppetizerFormValues) => {
         try {
             setLoading(true);
 
@@ -98,20 +94,16 @@ export const BeverageForm: React.FC<BeverageFormProps> = ({
                 isAvailable: data.isAvailable,
                 isNew: data.isNew,
                 isBestSeller: data.isBestSeller,
-                drinkDetails: {
-                    volume: data.volume,
-                    brand: data.brand?.trim() ? data.brand : undefined,
-                },
             };
 
             if (initialData) {
-                await axios.patch(`/api/beverages/${params.beverageId}`, payload);
+                await axios.patch(`/api/appetizers/${params.appetizerId}`, payload);
             } else {
-                await axios.post(`/api/beverages`, payload);
+                await axios.post(`/api/appetizers`, payload);
             }
 
             router.refresh();
-            router.push(`/beverages`);
+            router.push(`/appetizers`);
             toast.success(toastMessage);
         } catch {
             toast.error("Something went wrong.");
@@ -123,10 +115,10 @@ export const BeverageForm: React.FC<BeverageFormProps> = ({
     const onDelete = async () => {
         try {
             setLoading(true);
-            await axios.delete(`/api/beverages/${params.beverageId}`)
+            await axios.delete(`/api/appetizers/${params.appetizerId}`)
             router.refresh();
-            router.push(`/beverages`);
-            toast.success("Beverage deleted.");
+            router.push(`/appetizers`);
+            toast.success("Appetizer deleted.");
         } catch {
             toast.error("Something went wrong.")
         } finally {
@@ -168,7 +160,7 @@ export const BeverageForm: React.FC<BeverageFormProps> = ({
                     className="space-y-8 w-full"
                 >
                     <div className="space-y-3">
-                        <h3 className="font-semibold">Section 1: Beverage Image</h3>
+                        <h3 className="font-semibold">Section 1: Appetizer Image</h3>
                         <FormField
                             control={form.control}
                             name="img"
@@ -202,7 +194,7 @@ export const BeverageForm: React.FC<BeverageFormProps> = ({
                                         <FormControl>
                                             <Input
                                                 disabled={loading}
-                                                placeholder="Mojito Đào"
+                                                placeholder="Gà Giòn Không Xương Xốt Thái Tomyum..."
                                                 value={field.value}
                                                 onChange={(event) => {
                                                     const value = event.target.value;
@@ -229,40 +221,6 @@ export const BeverageForm: React.FC<BeverageFormProps> = ({
                                 )}
                             />
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <FormField
-                                control={form.control}
-                                name="volume"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Volume</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                disabled={loading}
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="brand"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Brand</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                disabled={loading}
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
                         <FormField
                             control={form.control}
                             name="desc"
@@ -272,7 +230,7 @@ export const BeverageForm: React.FC<BeverageFormProps> = ({
                                     <FormControl>
                                         <textarea
                                             disabled={loading}
-                                            placeholder="Mát lạnh mùa hè cùng hương vị soda đậm vị đào ..."
+                                            placeholder="Vị gà truyền thống cùng độ chua cay Tom Yum đặc trưng..."
                                             className="min-h-24 w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none"
                                             {...field}
                                         />

@@ -34,7 +34,7 @@ const getReadableTextColor = (hexColor: string) => {
 export const columns: ColumnDef<Column>[] = [
     {
         accessorKey: "name",
-        header: "Name",
+        header: "Tên",
     },
     {
         accessorKey: "code",
@@ -42,7 +42,7 @@ export const columns: ColumnDef<Column>[] = [
     },
     {
         id: "color",
-        header: "Tag",
+        header: "Tags",
         cell: ({ row }) => {
             const color = row.original.color;
 

@@ -32,15 +32,15 @@ export const CellAction: React.FC<PizzaCellActionProps> = ({
 
     const onCopy = (id: string) => {
         navigator.clipboard.writeText(id);
-        toast.success("Pizza id copied to the clipboard.");
+        toast.success("Appetizer id copied to the clipboard.");
     };
 
     const onDelete = async () => {
         try {
             setLoading(true);
-            await axios.delete(`/api/pizzas/${data.id}`)
+            await axios.delete(`/api/appetizers/${data.id}`)
             router.refresh();
-            toast.success("Pizza deleted.");
+            toast.success("Appetizers deleted.");
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
             toast.error("Something went wrong.")
@@ -71,7 +71,7 @@ export const CellAction: React.FC<PizzaCellActionProps> = ({
                         <Copy className="h-4 w-4 mr-2" />
                         Copy
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => router.push(`/pizzas/${data.id}`)}>
+                    <DropdownMenuItem onClick={() => router.push(`/appetizers/${data.id}`)}>
                         <Edit className="h-4 w-4 mr-2" />
                         Update
                     </DropdownMenuItem>

@@ -86,7 +86,7 @@ const BeveragesClient: React.FC<BeveragesClientProps> = ({
             <DataTable
                 columns={columns}
                 data={filteredData}
-                searchKey="name"
+                searchKeys={["name"]}
                 getRowClassName={(row) => row.isAvailable ? "" : "bg-red-50/80 dark:bg-red-950/20"}
             />
             <Heading

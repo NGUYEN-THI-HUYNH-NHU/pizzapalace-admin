@@ -1,10 +1,9 @@
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, IndianRupee, Package, ShoppingCart, TrendingUp, Users2 } from "lucide-react";
+import { ArrowRight, BadgeCheck, DollarSignIcon, Package, ShoppingCart, TrendingUp, Users2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { currencyFormatter, formatDateTime, cn } from "@/lib/utils";
 
@@ -16,7 +15,7 @@ import { DashboardAnalytics } from "./components/dashboard-analytics";
 import { STATUS_COLOR_MAP } from "@/lib/order-utils";
 
 const metricCards = [
-    { key: "totalRevenue", title: "Doanh thu", icon: IndianRupee },
+    { key: "totalRevenue", title: "Doanh thu", icon: DollarSignIcon },
     { key: "todayRevenue", title: "Doanh thu hôm nay", icon: TrendingUp },
     { key: "totalOrders", title: "Tổng đơn hàng", icon: ShoppingCart },
     { key: "totalCustomers", title: "Khách hàng", icon: Users2 },
@@ -52,22 +51,22 @@ export default async function HomePage() {
 
     return (
         <div className="space-y-8 p-8 pt-6">
-            <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {metricCards.map((metric) => {
                     const Icon = metric.icon;
 
                     return (
                         <Card key={metric.key} className="border-slate-200/70 shadow-sm">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0">
                                 <div>
                                     <CardDescription>{metric.title}</CardDescription>
-                                    <CardTitle className="text-2xl">{getMetricValue(stats, metric.key)}</CardTitle>
+                                    <CardTitle className="text-xl">{getMetricValue(stats, metric.key)}</CardTitle>
                                 </div>
-                                <div className="rounded-full bg-orange-50 p-3 text-orange-600">
+                                <div className="rounded-full bg-yellow-50 p-3 text-yellow-500">
                                     <Icon className="size-5" />
                                 </div>
                             </CardHeader>
-                            <CardContent className="pt-0 text-sm text-muted-foreground">
+                            <CardContent className="text-sm text-muted-foreground">
                                 {metric.key === "totalRevenue" && `Tháng này: ${currencyFormatter.format(stats.monthRevenue)}`}
                                 {metric.key === "totalOrders" && `${stats.paidOrders} đơn đã thanh toán`}
                                 {metric.key === "totalProducts" && `${stats.newProducts} sản phẩm mới`}
@@ -78,17 +77,18 @@ export default async function HomePage() {
                 })}
             </section>
 
-            <Separator />
-
-            <section className="grid gap-6 xl:grid-cols-[1.4fr_0.9fr]">
+            <section className="grid gap-6 lg:grid-cols-[1.4fr_0.9fr]">
                 <Card className="border-slate-200/70 shadow-sm">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                    <CardHeader className="flex flex-row justify-between space-y-0 pb-3">
                         <div>
                             <CardTitle>Top sản phẩm theo doanh thu</CardTitle>
                             <CardDescription>Các món đang kéo doanh thu tốt nhất.</CardDescription>
                         </div>
                         <Button asChild variant="ghost" size="sm">
-                            <Link href="/orders">Xem tất cả</Link>
+                            <Link href="/pizzas">
+                                Xem sản phẩm
+                                <ArrowRight className="w-4 h-4" />
+                            </Link>
                         </Button>
                     </CardHeader>
                     <CardContent className="space-y-5">
@@ -117,18 +117,18 @@ export default async function HomePage() {
 
                 <Card className="border-slate-200/70 shadow-sm">
                     <CardHeader className="pb-3">
-                        <div className="flex items-center justify-between">
+                        <div className="flex justify-between">
                             <div>
                                 <CardTitle>
                                     Đơn hàng đang xử lý
                                 </CardTitle>
-                                <CardDescription>Danh sách vừa phát sinh để theo dõi tức thời.</CardDescription>
+                                <CardDescription>Danh sách vừa phát sinh.</CardDescription>
                             </div>
                             <div className="flex flex-wrap gap-3">
-                                <Button asChild variant="secondary" className="bg-white text-slate-900 hover:bg-white/90">
+                                <Button asChild variant="ghost" size="sm">
                                     <Link href="/orders">
                                         Xem đơn hàng
-                                        <ArrowRight className="size-4" />
+                                        <ArrowRight className="w-4 h-4" />
                                     </Link>
                                 </Button>
                             </div>

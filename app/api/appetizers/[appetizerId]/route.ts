@@ -5,31 +5,31 @@ import prismadb from "@/lib/prismadb";
 
 export async function GET(
     _req: Request,
-    { params }: { params: Promise<{ pizzaId: string }> }
+    { params }: { params: Promise<{ appetizerId: string }> }
 ) {
     try {
-        const { pizzaId } = await params;
+        const { appetizerId } = await params;
 
-        if (!pizzaId) {
-            return new NextResponse("Pizza id is required", { status: 400 });
+        if (!appetizerId) {
+            return new NextResponse("Appetizer id is required", { status: 400 });
         }
 
-        const pizza = await prismadb.product.findUnique({
+        const appetizer = await prismadb.product.findUnique({
             where: {
-                id: pizzaId,
+                id: appetizerId,
             }
         });
 
-        return NextResponse.json(pizza);
+        return NextResponse.json(appetizer);
     } catch (error) {
-        console.log("[PIZZA_GET]", error);
+        console.log("[APPETIZER_GET]", error);
         return new NextResponse("Internal error", { status: 500 });
     }
 }
 
 export async function PATCH(
     req: Request,
-    { params }: { params: Promise<{ pizzaId: string }> }
+    { params }: { params: Promise<{ appetizerId: string }> }
 ) {
     try {
         const { userId } = await auth();
@@ -40,25 +40,23 @@ export async function PATCH(
             desc,
             img,
             price,
-            tags,
             isAvailable,
             isNew,
-            isBestSeller,
-            pizzaDetails
+            isBestSeller
         } = body;
-        const { pizzaId } = await params;
+        const { appetizerId } = await params;
 
         if (!userId) {
             return new NextResponse("Unauthenticated", { status: 401 });
         }
 
-        if (!pizzaId) {
-            return new NextResponse("Pizza id is required", { status: 400 });
+        if (!appetizerId) {
+            return new NextResponse("Appetizer id is required", { status: 400 });
         }
 
-        const pizza = await prismadb.product.update({
+        const appetizer = await prismadb.product.update({
             where: {
-                id: pizzaId,
+                id: appetizerId,
             },
             data: {
                 name,
@@ -66,46 +64,44 @@ export async function PATCH(
                 desc,
                 img,
                 price,
-                tags: tags,
                 isAvailable,
                 isNew,
-                isBestSeller,
-                pizzaDetails
+                isBestSeller
             },
         });
 
-        return NextResponse.json(pizza);
+        return NextResponse.json(appetizer);
     } catch (error) {
-        console.log("[PIZZA_PATCH]", error);
+        console.log("[APPETIZER_PATCH]", error);
         return new NextResponse("Internal error", { status: 500 });
     }
 }
 
 export async function DELETE(
     _req: Request,
-    { params }: { params: Promise<{ pizzaId: string }> }
+    { params }: { params: Promise<{ appetizerId: string }> }
 ) {
     try {
         const { userId } = await auth();
-        const { pizzaId } = await params;
+        const { appetizerId } = await params;
 
         if (!userId) {
             return new NextResponse("Unauthenticated", { status: 401 });
         }
 
-        if (!pizzaId) {
+        if (!appetizerId) {
             return new NextResponse("Pizza id is required", { status: 400 });
         }
 
-        const pizza = await prismadb.product.delete({
+        const appetizer = await prismadb.product.delete({
             where: {
-                id: pizzaId,
+                id: appetizerId,
             }
         });
 
-        return NextResponse.json(pizza);
+        return NextResponse.json(appetizer);
     } catch (error) {
-        console.log("[PIZZA_DELETE]", error);
+        console.log("[APPETIZER_DELETE]", error);
         return new NextResponse("Internal error", { status: 500 });
     }
 }

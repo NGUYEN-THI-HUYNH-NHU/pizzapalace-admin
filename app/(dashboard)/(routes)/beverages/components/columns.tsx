@@ -27,7 +27,7 @@ const currencyFormatter = new Intl.NumberFormat("vi-VN", {
 export const columns: ColumnDef<Column>[] = [
     {
         accessorKey: "img",
-        header: "Img",
+        header: "Ảnh",
         cell: ({ row }) => (
             <div className="relative h-11 w-11 overflow-hidden rounded-full border">
                 <Image
@@ -41,7 +41,7 @@ export const columns: ColumnDef<Column>[] = [
     },
     {
         accessorKey: "name",
-        header: "Name & Slug",
+        header: "Tên & Slug",
         cell: ({ row }) => (
             <div>
                 <p className="font-semibold">{row.original.name}</p>
@@ -51,17 +51,17 @@ export const columns: ColumnDef<Column>[] = [
     },
     {
         accessorKey: "price",
-        header: "Price",
+        header: "Giá",
         cell: ({ row }) => `${currencyFormatter.format(row.original.price)}`
     },
     {
         accessorKey: "volume",
-        header: "Volume",
+        header: "Dung tích",
         cell: ({ row }) => `${row.original.volume}`
     },
     {
         accessorKey: "brand",
-        header: "Brand",
+        header: "Thương hiệu",
         cell: ({ row }) => `${row.original.brand}`
     },
     {
@@ -80,7 +80,7 @@ export const columns: ColumnDef<Column>[] = [
     },
     {
         accessorKey: "isAvailable",
-        header: "Available",
+        header: "Sẵn sàng",
         cell: ({ row }) => (
             <AvailabilityToggle
                 id={row.original.id}

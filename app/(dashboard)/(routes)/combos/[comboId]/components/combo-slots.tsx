@@ -1,8 +1,10 @@
 "use client"
 
-import { Plus, Trash, X } from "lucide-react";
+import { useState } from "react";
+import { Plus, Trash, X, Copy } from "lucide-react";
 import { Category, PizzaSize, PizzaTag, Product } from "@prisma/client";
 
+import { AlertModal } from "@/components/modals/alert-modal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -80,6 +82,7 @@ interface ComboSlotsProps {
     setActiveSlotId: (slotId: string) => void;
     addSlot: () => void;
     removeSlot: (slotId: string) => void;
+    copySlot: (slotId: string) => void;
     setProductSearch: (value: string) => void;
     setProductModalSlotId: (slotId: string) => void;
     updateSlot: (slotId: string, updater: (slot: SlotState) => SlotState) => void;
@@ -132,6 +135,7 @@ export const ComboSlots: React.FC<ComboSlotsProps> = ({
     setActiveSlotId,
     addSlot,
     removeSlot,
+    copySlot,
     setProductSearch,
     setProductModalSlotId,
     updateSlot,
@@ -142,8 +146,28 @@ export const ComboSlots: React.FC<ComboSlotsProps> = ({
     isProductCompatibleWithSlot,
     getProductPriceRange
 }) => {
+    const [slotToDelete, setSlotToDelete] = useState<string | null>(null);
+
+    const closeDeleteModal = () => {
+        setSlotToDelete(null);
+    };
+
+    const confirmDeleteSlot = () => {
+        if (!slotToDelete) return;
+
+        removeSlot(slotToDelete);
+        setSlotToDelete(null);
+    };
+
     return (
         <div className="space-y-4">
+            <AlertModal
+                isOpen={Boolean(slotToDelete)}
+                onClose={closeDeleteModal}
+                onConfirm={confirmDeleteSlot}
+                loading={loading}
+            />
+
             <div className="flex items-center justify-between">
                 <div>
                     <h3 className="font-semibold">Combo slots</h3>
@@ -211,14 +235,26 @@ export const ComboSlots: React.FC<ComboSlotsProps> = ({
                                     <div className="rounded-md border p-4 space-y-4">
                                         <div className="flex items-center justify-between">
                                             <h4 className="font-semibold">{slot.name}</h4>
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => removeSlot(slot.id)}
-                                            >
-                                                <Trash className="h-4 w-4" />
-                                            </Button>
+                                            <div className="flex items-center gap-2">
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => copySlot(slot.id)}
+                                                    title="Nhân bản slot"
+                                                >
+                                                    <Copy className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => setSlotToDelete(slot.id)}
+                                                    title="Delete slot"
+                                                >
+                                                    <Trash className="h-4 w-4" />
+                                                </Button>
+                                            </div>
                                         </div>
 
                                         <div className="space-y-3">
@@ -398,7 +434,7 @@ export const ComboSlots: React.FC<ComboSlotsProps> = ({
                                                     onRemove: (productId) => removeProductFromSlot(slot.id, productId)
                                                 })}
                                                 data={slotTableData}
-                                                searchKey="name"
+                                                searchKeys={["name"]}
                                             />
 
                                             <p className="text-sm text-muted-foreground">

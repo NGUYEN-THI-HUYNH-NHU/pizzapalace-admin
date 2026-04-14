@@ -5,31 +5,18 @@ import { CellAction } from "./cell-actions"
 import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 import AvailabilityToggle from "@/components/ui/availability-toggle"
-import Tag from "@/components/ui/tag";
+import { currencyFormatter } from "@/lib/utils"
 
 export type Column = {
     id: string
     img: string
     name: string
     slug: string
-    basePrice: number
-    tags: {
-        code: string
-        name: string
-        color: string
-    }[]
-    sizesCount: number
-    crustsCount: number
-    variantsCount: number
+    price: number
     isNew: boolean
     isBestSeller: boolean
     isAvailable: boolean
 }
-
-const currencyFormatter = new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND"
-});
 
 export const columns: ColumnDef<Column>[] = [
     {
@@ -57,33 +44,9 @@ export const columns: ColumnDef<Column>[] = [
         )
     },
     {
-        accessorKey: "basePrice",
+        accessorKey: "price",
         header: "Giá",
-        cell: ({ row }) => `Từ ${currencyFormatter.format(row.original.basePrice)}`
-    },
-    {
-        accessorKey: "variantsCount",
-        header: "Biến thể",
-        cell: ({ row }) => (
-            <span>
-                {row.original.sizesCount} Cỡ, {row.original.crustsCount} Đế ({row.original.variantsCount} Biến thể)
-            </span>
-        )
-    },
-    {
-        accessorKey: "tags",
-        header: "Tags",
-        cell: ({ row }) => (
-            <div className="flex flex-wrap gap-1">
-                {row.original.tags.length > 0 ? (
-                    row.original.tags.map((tag) => (
-                        <Tag key={tag.code} name={tag.name} color={tag.color} />
-                    ))
-                ) : (
-                    <span className="text-xs text-muted-foreground">No tags</span>
-                )}
-            </div>
-        )
+        cell: ({ row }) => `${currencyFormatter.format(row.original.price)}`
     },
     {
         id: "badges",
@@ -106,7 +69,7 @@ export const columns: ColumnDef<Column>[] = [
             <AvailabilityToggle
                 id={row.original.id}
                 isAvailable={row.original.isAvailable}
-                entityName="pizzas"
+                entityName="appetizers"
             />
         )
     },

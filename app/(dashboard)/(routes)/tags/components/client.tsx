@@ -34,7 +34,12 @@ const SizesClient: React.FC<ClientProps> = ({
 
             <Separator className="my-2" />
 
-            <DataTable columns={columns} data={data} searchKey="name" />
+            <DataTable
+                columns={columns}
+                data={data}
+                searchKeys={["name"]}
+                searchPlaceholder="Tìm kiếm theo tên tag..."
+            />
 
             <Separator className="my-2" />
 

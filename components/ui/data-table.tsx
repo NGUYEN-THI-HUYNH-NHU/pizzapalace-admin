@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -27,44 +27,80 @@ import {
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
     data: TData[]
-    searchKey: string
+    searchKeys?: string[]
+    searchPlaceholder?: string
     getRowClassName?: (row: TData) => string
 }
 
 export function DataTable<TData, TValue>({
     columns,
     data,
-    searchKey,
+    searchKeys,
+    searchPlaceholder = "Search...",
     getRowClassName
 }: DataTableProps<TData, TValue>) {
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(
         []
     )
+    const [globalFilter, setGlobalFilter] = useState("")
 
+    const activeSearchKeys = useMemo(() => {
+        if (Array.isArray(searchKeys) && searchKeys.length > 0) {
+            return searchKeys
+        }
+
+        return []
+    }, [searchKeys])
+
+    // eslint-disable-next-line react-hooks/incompatible-library
     const table = useReactTable({
         data,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         onColumnFiltersChange: setColumnFilters,
+        onGlobalFilterChange: setGlobalFilter,
         getFilteredRowModel: getFilteredRowModel(),
+        globalFilterFn: (row, _columnId, filterValue) => {
+            const query = String(filterValue ?? "").trim().toLowerCase()
+
+            if (!query) {
+                return true
+            }
+
+            if (!activeSearchKeys.length) {
+                return true
+            }
+
+            return activeSearchKeys.some((key) => {
+                const record = row.original as Record<string, unknown>
+                const value = record[key]
+
+                if (value === null || value === undefined) {
+                    return false
+                }
+
+                return String(value).toLowerCase().includes(query)
+            })
+        },
         state: {
             columnFilters,
+            globalFilter,
         },
     })
 
     return (
         <div>
-            <div className="flex items-center py-4">
-                <Input
-                    placeholder="Search..."
-                    value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
-                    onChange={(event) =>
-                        table.getColumn(searchKey)?.setFilterValue(event.target.value)
-                    }
-                    className="max-w-sm"
-                />
-            </div>
+            {activeSearchKeys.length > 0 ? (
+                <div className="flex items-center py-4">
+                    <Input
+                        placeholder={searchPlaceholder}
+                        value={(table.getState().globalFilter as string) ?? ""}
+                        onChange={(event) => table.setGlobalFilter(event.target.value)}
+                        className="max-w-sm"
+                    />
+                </div>
+            ) : null}
             <div className="overflow-hidden rounded-md border">
                 <Table>
                     <TableHeader>

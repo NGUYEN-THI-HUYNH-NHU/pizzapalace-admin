@@ -292,6 +292,27 @@ export const ComboForm: React.FC<ComboFormProps> = ({
         });
     };
 
+    const copySlot = (slotId: string) => {
+        const slotToCopy = slots.find((slot) => slot.id === slotId);
+
+        if (!slotToCopy) {
+            return;
+        }
+
+        const newSlotId = createSlotId();
+        const copiedSlot: SlotState = {
+            id: newSlotId,
+            name: `${slotToCopy.name} (copy)`,
+            type: slotToCopy.type,
+            pizzaSizeCode: slotToCopy.pizzaSizeCode,
+            productIds: [...slotToCopy.productIds],
+            tagCodes: [...slotToCopy.tagCodes]
+        };
+
+        setSlots((prev) => [...prev, copiedSlot]);
+        setActiveSlotId(newSlotId);
+    };
+
     const pruneTagCodesByProducts = (productIds: string[], tagCodes: string[]) => {
         return tagCodes.filter((tagCode) => {
             return productIds.some((productId) => {
@@ -739,6 +760,7 @@ export const ComboForm: React.FC<ComboFormProps> = ({
                         setActiveSlotId={setActiveSlotId}
                         addSlot={addSlot}
                         removeSlot={removeSlot}
+                        copySlot={copySlot}
                         setProductSearch={setProductSearch}
                         setProductModalSlotId={setProductModalSlotId}
                         updateSlot={updateSlot}

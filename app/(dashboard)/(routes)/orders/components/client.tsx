@@ -1,22 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CircleCheck, ClockFading, Loader2, Package, Search, ShieldAlert, Sigma, Truck } from "lucide-react";
-import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
+import { CircleCheck, ClockFading, Loader2, Package, ShieldAlert, Sigma, Truck } from "lucide-react";
 import toast from "react-hot-toast";
 import { io, type Socket } from "socket.io-client";
 
 import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
-import { Input } from "@/components/ui/input";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
 import {
     Card,
     CardContent,
@@ -28,6 +18,7 @@ import { OrderModal } from "./modal";
 import { getOrderColumns } from "./columns";
 import { Order } from "@prisma/client";
 import { getNextStatus } from "@/lib/order-utils";
+import { DataTable } from "@/components/ui/data-table";
 
 type OrdersResponse = {
     orders: Order[];
@@ -54,7 +45,6 @@ export default function OrdersClient() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
-    const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<"all" | Order["status"]>("all");
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
@@ -119,21 +109,10 @@ export default function OrdersClient() {
         };
     }, []);
 
-    const filteredOrders = useMemo(() => {
-        const keyword = search.trim().toLowerCase();
-
-        return orders.filter((order) => {
-            const matchesStatus = statusFilter === "all" ? true : order.status === statusFilter;
-            const matchesKeyword = !keyword || [
-                order.id,
-                order.customerName,
-                order.customerPhone,
-                order.customerAddress,
-            ].some((value) => value.toLowerCase().includes(keyword));
-
-            return matchesStatus && matchesKeyword;
-        });
-    }, [orders, search, statusFilter]);
+    const filteredOrders = useMemo(
+        () => orders.filter((order) => (statusFilter === "all" ? true : order.status === statusFilter)),
+        [orders, statusFilter]
+    );
 
     const summary = useMemo(
         () => ({
@@ -199,12 +178,6 @@ export default function OrdersClient() {
         onCopyId: handleCopyId,
     });
 
-    const table = useReactTable({
-        data: filteredOrders,
-        columns,
-        getCoreRowModel: getCoreRowModel(),
-    });
-
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -252,16 +225,6 @@ export default function OrdersClient() {
             <Separator />
 
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <div className="relative w-full md:max-w-md">
-                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                        value={search}
-                        onChange={(event) => setSearch(event.target.value)}
-                        placeholder="Tìm theo mã đơn, tên, SĐT, địa chỉ"
-                        className="pl-9"
-                    />
-                </div>
-
                 <div className="flex items-center gap-2">
                     <Button variant={statusFilter === "all" ? "default" : "outline"} size="sm" onClick={() => setStatusFilter("all")}>Tất cả</Button>
                     <Button variant={statusFilter === "PENDING" ? "default" : "outline"} size="sm" onClick={() => setStatusFilter("PENDING")}>Đang chờ</Button>
@@ -278,46 +241,20 @@ export default function OrdersClient() {
                 </div>
             ) : null}
 
-            <div className="overflow-hidden rounded-xl border bg-white">
-                {loading ? (
-                    <div className="flex min-h-55 items-center justify-center text-muted-foreground">
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Đang tải đơn hàng...
-                    </div>
-                ) : table.getRowModel().rows.length === 0 ? (
-                    <div className="flex min-h-55 items-center justify-center text-muted-foreground">
-                        Không có đơn hàng phù hợp.
-                    </div>
-                ) : (
-                    <div className="overflow-x-auto">
-                        <Table>
-                            <TableHeader>
-                                {table.getHeaderGroups().map((headerGroup) => (
-                                    <TableRow key={headerGroup.id}>
-                                        {headerGroup.headers.map((header) => (
-                                            <TableHead key={header.id}>
-                                                {header.isPlaceholder
-                                                    ? null
-                                                    : flexRender(header.column.columnDef.header, header.getContext())}
-                                            </TableHead>
-                                        ))}
-                                    </TableRow>
-                                ))}
-                            </TableHeader>
-                            <TableBody>
-                                {table.getRowModel().rows.map((row) => (
-                                    <TableRow key={row.id}>
-                                        {row.getVisibleCells().map((cell) => (
-                                            <TableCell key={cell.id}>
-                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                            </TableCell>
-                                        ))}
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-                )}
-            </div>
+            {loading ? (
+                <div className="flex min-h-55 items-center justify-center text-muted-foreground">
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Đang tải đơn hàng...
+                </div>
+            ) : (
+                <div className="overflow-x-auto">
+                    <DataTable
+                        columns={columns}
+                        data={filteredOrders}
+                        searchKeys={["id", "customerName", "customerPhone", "customerAddress"]}
+                        searchPlaceholder="Tìm theo mã đơn, tên, SĐT, địa chỉ"
+                    />
+                </div>
+            )}
 
             <OrderModal
                 order={selectedOrder}
