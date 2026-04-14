@@ -21,12 +21,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createSlotProductColumns } from "./columns";
 import { currencyFormatter } from "@/lib/utils";
 
-export type SlotType = "PIZZA" | "DRINK";
-
 export interface SlotState {
     id: string;
     name: string;
-    type: SlotType;
+    type: Category;
     pizzaSizeCode: string;
     productIds: string[];
     tagCodes: string[];
@@ -280,7 +278,7 @@ export const ComboSlots: React.FC<ComboSlotsProps> = ({
                                                             </Button>
                                                         </DropdownMenuTrigger>
                                                         <DropdownMenuContent className="w-52">
-                                                            {["PIZZA", "DRINK"].map((typeOption) => (
+                                                            {["PIZZA", "DRINK", "CHICKEN", "APPETIZER"].map((typeOption) => (
                                                                 <DropdownMenuCheckboxItem
                                                                     key={typeOption}
                                                                     checked={slot.type === typeOption}
@@ -288,7 +286,7 @@ export const ComboSlots: React.FC<ComboSlotsProps> = ({
                                                                     onCheckedChange={() => {
                                                                         updateSlot(slot.id, (current) => ({
                                                                             ...current,
-                                                                            type: typeOption as SlotType,
+                                                                            type: typeOption as Category,
                                                                             pizzaSizeCode: typeOption === "PIZZA" ? defaultPizzaSizeCode : "",
                                                                             productIds: [],
                                                                             tagCodes: []

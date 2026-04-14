@@ -24,7 +24,7 @@ const ComboPage = async ({
         prismadb.product.findMany({
             where: {
                 category: {
-                    in: [Category.PIZZA, Category.DRINK]
+                    in: [Category.PIZZA, Category.DRINK, Category.CHICKEN, Category.APPETIZER]
                 },
                 isAvailable: true
             }

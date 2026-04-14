@@ -5,6 +5,8 @@ const isPublicApiRoute = createRouteMatcher([
     '/api/categories(.*)',
     '/api/pizzas(.*)',
     '/api/crusts(.*)',
+    '/api/chickens(.*)',
+    '/api/appetizers(.*)',
     '/api/beverages(.*)',
     '/api/combos(.*)',
     '/api/orders(.*)',

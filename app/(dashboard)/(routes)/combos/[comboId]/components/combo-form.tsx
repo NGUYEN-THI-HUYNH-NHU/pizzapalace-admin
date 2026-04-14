@@ -36,7 +36,7 @@ import {
     DialogTitle
 } from "@/components/ui/dialog";
 
-import { ComboSlots, ProductForSlot, SlotState, SlotType } from "./combo-slots";
+import { ComboSlots, ProductForSlot, SlotState } from "./combo-slots";
 import { currencyFormatter } from "@/lib/utils";
 
 interface ComboOptionInput {
@@ -168,9 +168,11 @@ export const ComboForm: React.FC<ComboFormProps> = ({
     const defaultPizzaSizeCode = pizzaSizes[0]?.code ?? "";
 
     const isProductCompatibleWithSlot = (product: ProductForSlot, slot: SlotState) => {
-        const sameType = slot.type === "PIZZA"
-            ? product.category === Category.PIZZA
-            : product.category === Category.DRINK;
+        const sameType =
+            (slot.type === "PIZZA" && product.category === Category.PIZZA)
+            || (slot.type === "DRINK" && product.category === Category.DRINK)
+            || (slot.type === "CHICKEN" && product.category === Category.CHICKEN)
+            || (slot.type === "APPETIZER" && product.category === Category.APPETIZER);
 
         if (!sameType) {
             return false;
@@ -188,7 +190,15 @@ export const ComboForm: React.FC<ComboFormProps> = ({
 
         return slots.map((slot, index) => {
             const firstOptionProduct = slot.options[0] ? productsById[slot.options[0].productId] : undefined;
-            const inferredType: SlotType = firstOptionProduct?.category === Category.DRINK ? "DRINK" : "PIZZA";
+            let inferredType: Category = "PIZZA";
+
+            if (firstOptionProduct?.category === Category.DRINK) {
+                inferredType = "DRINK";
+            } else if (firstOptionProduct?.category === Category.CHICKEN) {
+                inferredType = "CHICKEN";
+            } else if (firstOptionProduct?.category === Category.APPETIZER) {
+                inferredType = "APPETIZER";
+            }
 
             return {
                 id: `${index}-${createSlotId()}`,
