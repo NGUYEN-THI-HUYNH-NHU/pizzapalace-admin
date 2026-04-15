@@ -8,7 +8,7 @@ import { Modal } from "@/components/ui/modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { cn, currencyFormatter, formatDateTime } from "@/lib/utils";
-import { Order, OrderStatus } from "@prisma/client";
+import { Order, OrderItem, OrderStatus, SelectedOption } from "@prisma/client";
 import { PAYMENT_LABELS, STATUS_COLOR_MAP, STATUS_OPTIONS } from "@/lib/order-utils";
 
 interface OrderModalProps {
@@ -27,6 +27,11 @@ export const OrderModal: React.FC<OrderModalProps> = ({
     onSave,
 }) => {
     const [status, setStatus] = useState<OrderStatus>(OrderStatus.PENDING);
+
+    const resolveOptionNote = (option: SelectedOption) => {
+        const details = [option.crustSize, option.crustName].filter(Boolean);
+        return details.length ? details.join(" - ") : null;
+    };
 
     useEffect(() => {
         if (order) {
@@ -71,18 +76,47 @@ export const OrderModal: React.FC<OrderModalProps> = ({
 
                     <div className="space-y-3">
                         <p className="text-sm font-medium">Sản phẩm</p>
-                        {order.orderItems.map((item) => (
+                        {(order.orderItems as OrderItem[]).map((item, itemIndex) => (
                             <div
-                                key={`${order.id}-${item.productId}`}
-                                className="flex gap-2 items-center"
+                                key={`${order.id}-${item.productId}-${itemIndex}`}
+                                className="flex items-start gap-2"
                             >
                                 <span className="text-sm">{item.quantity} x</span>
-                                <div className="flex flex-1 items-start justify-between gap-4 rounded-md border bg-muted/20 p-3">
-                                    <div>
+                                <div className="flex flex-1 flex-col justify-between gap-4 rounded-md border bg-muted/20 p-3">
+                                    <div className="flex justify-between">
                                         <p className="font-medium">{item.productName}</p>
-                                        <p className="text-sm text-muted-foreground"> {item.crustName && item.crustSize ? `${item.crustName} - ${item.crustSize}` : ''}</p>
+                                        <p className="font-semibold">{currencyFormatter.format(item.price * item.quantity)}</p>
                                     </div>
-                                    <p className="font-semibold">{currencyFormatter.format(item.price * item.quantity)}</p>
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">
+                                            {item.crustName && item.crustSize ? `${item.crustSize} - ${item.crustName}` : ""}
+                                        </p>
+
+                                        {Array.isArray(item.selectedOptions) && item.selectedOptions.length > 0 ? (
+                                            <>
+                                                {item.selectedOptions.map((option, optionIndex) => {
+                                                    const optionNote = resolveOptionNote(option);
+
+                                                    return (
+                                                        <div
+                                                            key={`${item.productId}-${option.productId ?? option.sku ?? option.k}-${optionIndex}`}
+                                                            className="mt-2 space-y-1 rounded-md border border-dashed bg-background/80 p-2"
+                                                        >
+                                                            <p className="text-sm text-slate-900">
+                                                                <span className="mr-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-slate-900 px-1 text-xs font-semibold text-white">
+                                                                    {optionIndex + 1}
+                                                                </span>
+                                                                {option.v}
+                                                            </p>
+                                                            <p className="2 text-sm text-muted-foreground">
+                                                                {optionNote ? ` (${optionNote})` : ""}
+                                                            </p>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </>
+                                        ) : null}
+                                    </div>
                                 </div>
                             </div>
 
