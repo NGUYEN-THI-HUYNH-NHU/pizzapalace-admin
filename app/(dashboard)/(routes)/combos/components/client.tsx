@@ -52,7 +52,7 @@ const CombosClient: React.FC<CombosClientProps> = ({
             <div className="flex items-center justify-between" >
                 <Heading
                     title={`Combos (${data.length})`}
-                    description="Manage combos for your store."
+                    description="Quản lý combo ăn uống cho cửa hàng của bạn."
                 />
                 <Button onClick={() => router.push(`/combos/new`)}>
                     <Plus className="mr-2 h-4 w-4" />

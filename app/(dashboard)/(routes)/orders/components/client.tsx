@@ -183,7 +183,7 @@ export default function OrdersClient() {
             <div className="flex items-center justify-between">
                 <Heading
                     title={`Orders (${summary.total})`}
-                    description="Manage store orders, update fulfillment status, and review customer details."
+                    description="Quản lý đơn đặt hàng cho cửa hàng của bạn."
                 />
             </div>
 

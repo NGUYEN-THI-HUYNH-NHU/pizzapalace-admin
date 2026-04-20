@@ -52,7 +52,7 @@ const ChickensClient: React.FC<ChickensClientProps> = ({
             <div className="flex items-center justify-between" >
                 <Heading
                     title={`Chickens (${data.length})`}
-                    description="Manage chickens for your store."
+                    description="Quản lý món gà cho cửa hàng của bạn."
                 />
                 <Button onClick={() => router.push(`/chickens/new`)}>
                     <Plus className="mr-2 h-4 w-4" />

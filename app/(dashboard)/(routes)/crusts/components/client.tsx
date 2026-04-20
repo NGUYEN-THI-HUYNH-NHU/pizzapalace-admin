@@ -24,7 +24,7 @@ const CrustsClient: React.FC<CrustsClientProps> = ({
             <div className="flex items-center justify-between" >
                 <Heading
                     title={`Pizza Crusts (${data.length})`}
-                    description="Manage pizza crusts for your store."
+                    description="Quản lý đế bánh pizza cho cửa hàng của bạn."
                 />
                 <Button onClick={() => router.push(`/crusts/new`)}>
                     <Plus className="mr-2 h-4 w-4" />

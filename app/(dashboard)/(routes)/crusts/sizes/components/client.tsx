@@ -23,7 +23,7 @@ const SizesClient: React.FC<ClientProps> = ({
             <div className="flex items-center justify-between" >
                 <Heading
                     title={`Pizza Sizes (${data.length})`}
-                    description="Manage pizza sizes for your store."
+                    description="Quản lý cỡ bánh pizza cho cửa hàng của bạn."
                 />
                 <Button onClick={() => router.push(`/crusts/sizes/new`)}>
                     <Plus className="mr-2 h-4 w-4" />

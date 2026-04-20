@@ -52,7 +52,7 @@ const BeveragesClient: React.FC<BeveragesClientProps> = ({
             <div className="flex items-center justify-between" >
                 <Heading
                     title={`Beverages (${data.length})`}
-                    description="Manage beverages for your store."
+                    description="Quản lý thức uống cho cửa hàng của bạn."
                 />
                 <Button onClick={() => router.push(`/beverages/new`)}>
                     <Plus className="mr-2 h-4 w-4" />

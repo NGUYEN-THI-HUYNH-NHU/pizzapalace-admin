@@ -40,7 +40,7 @@ export const CellAction: React.FC<PizzaCellActionProps> = ({
             setLoading(true);
             await axios.delete(`/api/appetizers/${data.id}`)
             router.refresh();
-            toast.success("Appetizers deleted.");
+            toast.success("Appetizer deleted.");
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
             toast.error("Something went wrong.")

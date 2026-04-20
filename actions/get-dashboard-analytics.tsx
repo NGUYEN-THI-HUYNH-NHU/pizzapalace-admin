@@ -183,7 +183,7 @@ export const getDashboardAnalytics = async (): Promise<DashboardAnalytics> => {
             isBestSeller: product.isBestSeller ?? false,
         }))
         .sort((left, right) => right.revenue - left.revenue)
-        .slice(0, 5);
+        .slice(0, 3);
 
     return {
         revenueByMonth,

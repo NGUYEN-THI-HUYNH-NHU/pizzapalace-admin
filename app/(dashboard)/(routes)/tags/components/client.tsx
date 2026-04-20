@@ -24,7 +24,7 @@ const SizesClient: React.FC<ClientProps> = ({
             <div className="flex items-center justify-between" >
                 <Heading
                     title={`Pizza Tags (${data.length})`}
-                    description="Manage pizza tags for your store."
+                    description="Quản lý tag sản phẩm cho cửa hàng của bạn."
                 />
                 <Button onClick={() => router.push(`/tags/new`)}>
                     <Plus className="mr-2 h-4 w-4" />

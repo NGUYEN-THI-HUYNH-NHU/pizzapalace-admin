@@ -52,7 +52,7 @@ const AppetizersClient: React.FC<AppetizersClientProps> = ({
             <div className="flex items-center justify-between" >
                 <Heading
                     title={`Appetizers (${data.length})`}
-                    description="Manage appetizers for your store."
+                    description="Quản lý món khai vị cho cửa hàng của bạn."
                 />
                 <Button onClick={() => router.push(`/appetizers/new`)}>
                     <Plus className="mr-2 h-4 w-4" />

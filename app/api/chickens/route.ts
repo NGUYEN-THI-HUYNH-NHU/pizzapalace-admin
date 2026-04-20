@@ -43,7 +43,7 @@ export async function POST(req: Request) {
             return new NextResponse("Unauthenticated", { status: 401 });
         }
 
-        if (!name || !slug || !desc || !img || tags) {
+        if (!name || !slug || !desc || !img) {
             return new NextResponse("Missing required fields", { status: 400 });
         }
 
