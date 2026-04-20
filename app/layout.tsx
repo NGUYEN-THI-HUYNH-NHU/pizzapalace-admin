@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ToasterProvider } from "@/providers/toast-provider";
+import { ScrollToTopButton } from "@/components/scroll-to-top-button";
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -21,6 +22,7 @@ export default function RootLayout({
       <html lang="en" suppressHydrationWarning>
         <body className={`${inter.className}`}>
           <ToasterProvider />
+          <ScrollToTopButton />
           {children}
         </body>
       </html>
