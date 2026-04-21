@@ -430,34 +430,6 @@ export const PizzaForm: React.FC<PizzaFormProps> = ({
                     <Separator />
 
                     <div className="space-y-3">
-                        <h3 className="font-semibold">Base Price</h3>
-                        <FormField
-                            control={form.control}
-                            name="price"
-                            render={({ field }) => (
-                                <FormItem className="max-w-xs">
-                                    <FormLabel>Price</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            type="number"
-                                            step="1000"
-                                            disabled={loading}
-                                            value={field.value}
-                                            onChange={(event) => {
-                                                const raw = event.target.value;
-                                                field.onChange(raw === "" ? 0 : Number(raw));
-                                            }}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
-
-                    <Separator />
-
-                    <div className="space-y-3">
                         <h3 className="font-semibold">Tags</h3>
                         <FormField
                             control={form.control}
@@ -639,7 +611,37 @@ export const PizzaForm: React.FC<PizzaFormProps> = ({
                     <Separator />
 
                     <div className="space-y-3">
-                        <h3 className="font-semibold">Section 6: Variants Matrix</h3>
+                        <h3 className="font-semibold">Base Price</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="price"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Price</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="number"
+                                                step="1000"
+                                                disabled={loading}
+                                                value={field.value}
+                                                onChange={(event) => {
+                                                    const raw = event.target.value;
+                                                    field.onChange(raw === "" ? 0 : Number(raw));
+                                                }}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                    </div>
+
+                    <Separator />
+
+                    <div className="space-y-3">
+                        <h3 className="font-semibold">Variants Matrix</h3>
                         {!selectedSizes.length || !selectedCrusts.length ? (
                             <p className="text-sm text-muted-foreground">
                                 Chọn Sizes và Crusts để tạo variants. Chỉ hiển thị cặp size/crust hợp lệ theo availableSizes của crust.

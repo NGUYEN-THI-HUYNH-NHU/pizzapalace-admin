@@ -44,7 +44,8 @@ const ChickensClient: React.FC<ChickensClientProps> = ({
         getPrice: (chicken) => chicken.price,
         getIsAvailable: (chicken) => chicken.isAvailable,
         getIsNew: (chicken) => chicken.isNew,
-        getIsBestSeller: (chicken) => chicken.isBestSeller
+        getIsBestSeller: (chicken) => chicken.isBestSeller,
+        getTags: (chicken) => chicken.tags
     });
 
     return (

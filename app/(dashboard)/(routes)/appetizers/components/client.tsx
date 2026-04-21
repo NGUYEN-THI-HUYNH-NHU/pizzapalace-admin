@@ -44,7 +44,8 @@ const AppetizersClient: React.FC<AppetizersClientProps> = ({
         getPrice: (appetizer) => appetizer.price,
         getIsAvailable: (appetizer) => appetizer.isAvailable,
         getIsNew: (appetizer) => appetizer.isNew,
-        getIsBestSeller: (appetizer) => appetizer.isBestSeller
+        getIsBestSeller: (appetizer) => appetizer.isBestSeller,
+        getTags: (appetizer) => appetizer.tags
     });
 
     return (
