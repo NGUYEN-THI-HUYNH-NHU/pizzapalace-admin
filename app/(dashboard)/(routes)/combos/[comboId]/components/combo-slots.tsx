@@ -230,7 +230,7 @@ export const ComboSlots: React.FC<ComboSlotsProps> = ({
 
                             return (
                                 <TabsContent key={slot.id} value={slot.id} className="mt-4">
-                                    <div className="rounded-md border p-4 space-y-4">
+                                    <div className="rounded-md border p-4 space-y-4 shadow-lg">
                                         <div className="flex items-center justify-between">
                                             <h4 className="font-semibold">{slot.name}</h4>
                                             <div className="flex items-center gap-2">
@@ -245,10 +245,10 @@ export const ComboSlots: React.FC<ComboSlotsProps> = ({
                                                 </Button>
                                                 <Button
                                                     type="button"
-                                                    variant="ghost"
+                                                    variant="destructive"
                                                     size="icon"
                                                     onClick={() => setSlotToDelete(slot.id)}
-                                                    title="Delete slot"
+                                                    title="Xóa slot"
                                                 >
                                                     <Trash className="h-4 w-4" />
                                                 </Button>

@@ -7,6 +7,7 @@ import prismadb from "@/lib/prismadb";
 
 const createUserSchema = z.object({
     name: z.string().trim().min(1, "Họ tên không được để trống."),
+    email: z.string().trim().email("Email không hợp lệ."),
     phone: z
         .string()
         .trim()
@@ -31,6 +32,7 @@ export async function GET() {
             select: {
                 id: true,
                 name: true,
+                email: true,
                 phone: true,
                 address: true,
                 role: true,
@@ -58,15 +60,18 @@ export async function POST(req: Request) {
         }
 
         const { name, phone, password } = parsed.data;
+        const email = parsed.data.email.toLowerCase();
 
         const existingUser = await prismadb.user.findFirst({
-            where: { phone },
+            where: {
+                OR: [{ phone }, { email }],
+            },
             select: { id: true },
         });
 
         if (existingUser) {
             return NextResponse.json(
-                { message: "Số điện thoại đã được đăng ký." },
+                { message: "Email hoặc số điện thoại đã được đăng ký." },
                 { status: 409, headers: CORS_HEADERS }
             );
         }
@@ -76,6 +81,7 @@ export async function POST(req: Request) {
         const user = await prismadb.user.create({
             data: {
                 name,
+                email,
                 phone,
                 hashedPassword,
                 role: Role.CUSTOMER,
@@ -83,6 +89,7 @@ export async function POST(req: Request) {
             select: {
                 id: true,
                 name: true,
+                email: true,
                 phone: true,
                 role: true,
                 createdAt: true,

@@ -5,6 +5,7 @@ import prismadb from "@/lib/prismadb";
 
 const updateUserSchema = z.object({
     name: z.string().trim().min(1, "Họ tên không được để trống."),
+    email: z.string().trim().email("Email không hợp lệ."),
     phone: z
         .string()
         .trim()
@@ -35,6 +36,7 @@ export async function GET(_req: Request, context: RouteContext) {
             select: {
                 id: true,
                 name: true,
+                email: true,
                 phone: true,
                 address: true,
                 role: true,
@@ -69,6 +71,8 @@ export async function PUT(req: Request, context: RouteContext) {
             );
         }
 
+        const normalizedEmail = parsed.data.email.toLowerCase();
+
         const existingUser = await prismadb.user.findUnique({
             where: { id },
             select: { id: true },
@@ -81,17 +85,26 @@ export async function PUT(req: Request, context: RouteContext) {
             );
         }
 
-        const duplicatedPhoneUser = await prismadb.user.findFirst({
+        const duplicatedUser = await prismadb.user.findFirst({
             where: {
-                phone: parsed.data.phone,
+                OR: [
+                    { phone: parsed.data.phone },
+                    { email: normalizedEmail },
+                ],
                 NOT: { id },
             },
-            select: { id: true },
+            select: { id: true, phone: true, email: true },
         });
 
-        if (duplicatedPhoneUser) {
+        if (duplicatedUser) {
             return NextResponse.json(
-                { message: "Số điện thoại đã được sử dụng." },
+                {
+                    message:
+                        duplicatedUser.email === parsed.data.email
+                            || duplicatedUser.email === normalizedEmail
+                            ? "Email đã được sử dụng."
+                            : "Số điện thoại đã được sử dụng.",
+                },
                 { status: 409, headers: CORS_HEADERS }
             );
         }
@@ -100,12 +113,14 @@ export async function PUT(req: Request, context: RouteContext) {
             where: { id },
             data: {
                 name: parsed.data.name,
+                email: normalizedEmail,
                 phone: parsed.data.phone,
                 address: parsed.data.address
             },
             select: {
                 id: true,
                 name: true,
+                email: true,
                 phone: true,
                 address: true,
                 role: true,
