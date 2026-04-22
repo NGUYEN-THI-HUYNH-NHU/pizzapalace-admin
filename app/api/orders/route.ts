@@ -2,6 +2,7 @@ import { OrderStatus, PaymentMethod } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 import prismadb from "@/lib/prismadb";
+import { sendOrderConfirmationEmail } from "@/lib/email";
 import { emitRealtimeEvent } from "@/lib/realtime";
 
 type IncomingOrderItem = {
@@ -77,13 +78,45 @@ const normalizeSelectedOptions = (items: IncomingOrderItem["selectedOptions"] = 
     }));
 };
 
+const ACTIVE_ORDER_STATUSES = [
+    OrderStatus.PENDING,
+    OrderStatus.PREPARING,
+    OrderStatus.DELIVERING,
+];
+
 export async function GET(req: Request) {
     try {
         const { searchParams } = new URL(req.url);
         const userId = searchParams.get("userId")?.trim() ?? "";
+        const phone = searchParams.get("phone")?.trim() ?? "";
+        const orderId = searchParams.get("orderId")?.trim() ?? "";
+
+        const where: {
+            userId?: string;
+            customerPhone?: string;
+            id?: string;
+            status?: { in: OrderStatus[] };
+        } = {};
+        const isGuestLookup = Boolean(phone || orderId);
+
+        if (userId && isObjectId(userId)) {
+            where.userId = userId;
+        }
+
+        if (phone) {
+            where.customerPhone = phone;
+        }
+
+        if (orderId) {
+            where.id = orderId;
+        }
+
+        if (isGuestLookup && !userId) {
+            where.status = { in: ACTIVE_ORDER_STATUSES };
+        }
 
         const orders = await prismadb.order.findMany({
-            where: userId && isObjectId(userId) ? { userId } : undefined,
+            where: Object.keys(where).length > 0 ? where : undefined,
             orderBy: {
                 createdAt: "desc",
             },
@@ -143,6 +176,17 @@ export async function POST(req: Request) {
             event: "order:new",
             payload: { order },
             rooms: ["admins"],
+        });
+
+        void sendOrderConfirmationEmail({
+            orderId: order.id,
+            customerName: order.customerName,
+            customerEmail: body.email,
+            customerPhone: order.customerPhone,
+            customerAddress: order.customerAddress,
+            totalAmount: order.totalAmount,
+        }).catch((error) => {
+            console.log("[ORDER_CONFIRMATION_EMAIL]", error);
         });
 
         return NextResponse.json({

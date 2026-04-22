@@ -11,6 +11,15 @@ const fromName = process.env.SMTP_FROM_NAME;
 
 let transporter: nodemailer.Transporter | null = null;
 
+type OrderConfirmationEmailInput = {
+    orderId: string;
+    customerName: string;
+    customerEmail: string;
+    customerPhone: string;
+    customerAddress: string;
+    totalAmount: number;
+};
+
 const getTransporter = () => {
     if (transporter) {
         return transporter;
@@ -33,11 +42,39 @@ const getTransporter = () => {
     return transporter;
 };
 
+export const sendOrderConfirmationEmail = async ({
+    orderId,
+    customerName,
+    customerEmail,
+    customerPhone,
+    customerAddress,
+    totalAmount,
+}: OrderConfirmationEmailInput) => {
+    const mailer = getTransporter();
+
+    await mailer.sendMail({
+        from: `"${fromName ?? "PizzaPalace"}" <${fromEmail}>`,
+        to: customerEmail,
+        subject: `Xác nhận đơn hàng PizzaPalace #${orderId}`,
+        text: [
+            `Xin chào ${customerName || "bạn"},`,
+            "",
+            "PizzaPalace đã nhận được đơn hàng của bạn.",
+            `Mã đơn hàng: ${orderId}`,
+            `Số điện thoại: ${customerPhone}`,
+            `Địa chỉ: ${customerAddress}`,
+            `Tổng tiền: ${totalAmount.toLocaleString("vi-VN")} đ`,
+            "",
+            "Bạn có thể tra cứu đơn hàng tại trang Theo dõi đơn hàng bằng số điện thoại và mã đơn ở trên.",
+        ].join("\n"),
+    });
+};
+
 export const sendForgotPasswordCodeEmail = async (to: string, code: string) => {
     const mailer = getTransporter();
 
     await mailer.sendMail({
-        from: `\"${fromName}\" <${fromEmail}>`,
+        from: `"${fromName ?? "PizzaPalace"}" <${fromEmail}>`,
         to,
         subject: "Mã xác nhận đặt lại mật khẩu PizzaPalace",
         text: [

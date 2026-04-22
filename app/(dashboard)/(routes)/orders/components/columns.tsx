@@ -34,7 +34,7 @@ export const getOrderColumns = ({ onView, onAdvance, onCopyId }: OrderColumnActi
             <div>
                 <p className="font-medium">{row.original.customerName}</p>
                 <p className="text-xs text-muted-foreground">{row.original.customerPhone}</p>
-                <p className="text-xs text-muted-foreground line-clamp-1">{row.original.customerAddress}</p>
+                <p className="text-xs text-muted-foreground truncate max-w-xs">{row.original.customerAddress}</p>
             </div>
         ),
     },
