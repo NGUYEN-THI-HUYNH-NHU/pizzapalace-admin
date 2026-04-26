@@ -6,13 +6,10 @@ Hệ thống quản trị nội bộ dành cho chuỗi pizza **Pizza Palace**, x
 
 - [Tổng quan](#tổng-quan)
 - [Tính năng](#tính-năng)
-- [Kiến trúc thư mục](#kiến-trúc-thư-mục)
 - [Yêu cầu môi trường](#yêu-cầu-môi-trường)
 - [Cài đặt & chạy dự án](#cài-đặt--chạy-dự-án)
 - [Cấu hình biến môi trường](#cấu-hình-biến-môi-trường)
 - [Scripts](#scripts)
-- [Triển khai](#triển-khai)
-- [Đóng góp](#đóng-góp)
 - [License](#license)
 
 ---
@@ -23,7 +20,7 @@ Pizza Palace Admin là ứng dụng quản trị **chỉ dành cho nhân viên/a
 
 - Xem tổng quan kinh doanh theo thời gian thực (doanh thu, đơn hàng, khách hàng).
 - Quản lý toàn bộ menu: pizza, gà rán, khai vị, đồ uống, combo.
-- Xử lý và theo dõi vòng đời đơn hàng (từ `PENDING` → `PREPARING` → `DELIVERING` → `COMPLETED`).
+- Xử lý và theo dõi vòng đời đơn hàng.
 - Nhận thông báo đơn hàng mới ngay lập tức qua WebSocket.
 - Quản lý người dùng và phân quyền (CUSTOMER / STAFF / ADMIN).
 
@@ -34,53 +31,11 @@ Pizza Palace Admin là ứng dụng quản trị **chỉ dành cho nhân viên/a
 | Nhóm | Chi tiết |
 |---|---|
 | **Dashboard** | Thống kê doanh thu (ngày / tháng / tổng), tỷ lệ hoàn tất đơn, top sản phẩm, biểu đồ theo tháng |
-| **Quản lý sản phẩm** | Pizza (kích thước, đế), Gà rán, Khai vị, Đồ uống, Combo; upload ảnh Cloudinary |
+| **Quản lý sản phẩm** | Pizza (kích thước, đế), Gà rán, Khai vị, Đồ uống, Combo |
 | **Quản lý đơn hàng** | Danh sách đơn, lọc theo trạng thái / thanh toán, cập nhật trạng thái, xem chi tiết |
-| **Quản lý cấu hình** | Pizza tag, pizza crust (loại đế), pizza size |
 | **Quản lý người dùng** | Danh sách khách hàng, phân quyền |
 | **Realtime** | Nhận đơn mới qua Socket.IO (`join:admin` room), không cần reload trang |
 | **Xác thực** | Đăng nhập qua Clerk (hỗ trợ OAuth, email/password) |
-
----
-
-## Kiến trúc thư mục
-
-```
-pizzapalace-admin/
-├── app/                        # Next.js App Router
-│   ├── (auth)/                 # Layout + trang đăng nhập (Clerk)
-│   ├── (dashboard)/            # Layout chính + tất cả route quản trị
-│   │   └── (routes)/
-│   │       ├── page.tsx        # Dashboard tổng quan
-│   │       ├── orders/         # Quản lý đơn hàng
-│   │       ├── pizzas/         # Quản lý pizza
-│   │       ├── chickens/       # Gà rán
-│   │       ├── appetizers/     # Khai vị
-│   │       ├── beverages/      # Đồ uống
-│   │       ├── combos/         # Combo
-│   │       ├── crusts/         # Loại đế pizza
-│   │       ├── tags/           # Pizza tag
-│   │       └── components/     # Component dùng riêng cho dashboard
-│   └── api/                    # Route Handlers (REST API)
-│       ├── auth/               # Đăng nhập tùy chỉnh
-│       ├── orders/             # CRUD đơn hàng
-│       ├── pizzas/             # CRUD pizza
-│       ├── categories/         # Danh mục
-│       └── ...
-├── actions/                    # Server Actions (Next.js)
-├── components/                 # Shared UI components (shadcn/ui + custom)
-├── hooks/                      # Custom React hooks
-├── lib/                        # Tiện ích: prismadb, email, realtime, utils
-├── providers/                  # Context providers (Toast)
-├── prisma/
-│   └── schema.prisma           # Database schema (MongoDB)
-├── public/                     # Tài nguyên tĩnh
-├── realtime-server.js          # Server Socket.IO độc lập (Express)
-├── .env.example                # Mẫu biến môi trường
-├── next.config.ts
-├── prisma.config.ts
-└── tsconfig.json
-```
 
 ---
 
@@ -192,30 +147,6 @@ REALTIME_ALLOWED_ORIGINS=*                       # Trên production: liệt kê 
 
 ---
 
-## Triển khai
-
-### Vercel (khuyến nghị cho Next.js)
-
-1. Push code lên GitHub.
-2. Import repository vào [Vercel](https://vercel.com/new).
-3. Thêm toàn bộ biến môi trường trong **Settings → Environment Variables**.
-4. Deploy — Vercel tự động nhận diện Next.js và build.
-
-> **Lưu ý:** `realtime-server.js` là một server Node.js độc lập, **không** chạy được trên Vercel Serverless. Triển khai riêng realtime server lên **Railway**, **Fly.io**, **Render**, hoặc VPS, sau đó cập nhật `NEXT_PUBLIC_REALTIME_URL` và `REALTIME_SERVER_URL` cho phù hợp.
-
-### Tự host (VPS / Docker)
-
-```bash
-# Build
-npm run build
-
-# Chạy Next.js (khuyến nghị dùng PM2)
-pm2 start npm --name "pizzapalace-admin" -- start
-
-# Chạy realtime server
-pm2 start realtime-server.js --name "pizzapalace-realtime"
-```
-
 **Lưu ý production quan trọng:**
 
 - Đặt `REALTIME_ALLOWED_ORIGINS` thành domain thực tế, **không dùng `*`**.
@@ -225,35 +156,6 @@ pm2 start realtime-server.js --name "pizzapalace-realtime"
 
 ---
 
-## Đóng góp
-
-Mọi đóng góp đều được hoan nghênh! Quy trình đề xuất:
-
-1. Fork repository và tạo nhánh từ `main`:
-   ```bash
-   git checkout -b feat/ten-tinh-nang
-   ```
-2. Thực hiện thay đổi, đảm bảo code đã qua lint:
-   ```bash
-   npm run lint
-   ```
-3. Commit theo quy ước [Conventional Commits](https://www.conventionalcommits.org/):
-   ```
-   feat: thêm tính năng lọc đơn hàng theo ngày
-   fix: sửa lỗi hiển thị giá combo
-   docs: cập nhật README
-   refactor: tối ưu query dashboard
-   ```
-4. Mở Pull Request vào nhánh `main` với mô tả rõ ràng.
-
-**Code style:**
-- TypeScript strict mode.
-- ESLint cấu hình theo `eslint-config-next` (xem `eslint.config.mjs`).
-- Dùng `shadcn/ui` cho các component UI mới.
-- Tailwind CSS cho styling — tuân theo utility-first, tránh custom CSS nếu không cần thiết.
-
----
-
 ## License
 
-Dự án này chưa có file LICENSE. Mọi quyền thuộc về tác giả gốc.
+Mọi quyền thuộc về tác giả gốc.
